@@ -1,6 +1,9 @@
 import { useState, FormEvent } from 'react';
+import { DndContext, PointerSensor, useSensor, useSensors, closestCorners } from '@dnd-kit/core';
+import type { DragEndEvent } from '@dnd-kit/core';
 import { useAuth } from '../lib/AuthContext';
 import { useCards } from '../hooks/useCards';
+import Column from '../components/Column';
 import type { Card } from '../types';
 
 const COLUMNS: { key: Card['status']; label: string }[] = [
@@ -11,9 +14,15 @@ const COLUMNS: { key: Card['status']; label: string }[] = [
 
 export default function Board() {
   const { user, logout } = useAuth();
-  const { cards, loading, error, createCard } = useCards();
+  const { cards, loading, error, createCard, moveCard } = useCards();
   const [newTitle, setNewTitle] = useState('');
   const [creating, setCreating] = useState(false);
+
+  const sensors = useSensors(
+    useSensor(PointerSensor, {
+      activationConstraint: { distance: 5 },
+    })
+  );
 
   const handleCreate = async (e: FormEvent) => {
     e.preventDefault();
@@ -28,6 +37,47 @@ export default function Board() {
     } finally {
       setCreating(false);
     }
+  };
+
+  const handleDragEnd = (event: DragEndEvent) => {
+    const { active, over } = event;
+    if (!over) return;
+
+    const activeCard = cards.find((c) => c.id === active.id);
+    if (!activeCard) return;
+
+    const overId = over.id as string;
+    const overIsColumn = COLUMNS.some((col) => col.key === overId);
+    const newStatus: Card['status'] = overIsColumn
+      ? (overId as Card['status'])
+      : (cards.find((c) => c.id === overId)?.status ?? activeCard.status);
+
+    const cardsInTargetColumn = cards
+      .filter((c) => c.status === newStatus && c.id !== activeCard.id)
+      .sort((a, b) => a.position - b.position);
+
+    let newPosition: number;
+
+    if (cardsInTargetColumn.length === 0) {
+      newPosition = 0;
+    } else if (overIsColumn) {
+      newPosition = cardsInTargetColumn[cardsInTargetColumn.length - 1].position + 1;
+    } else {
+      const overIndex = cardsInTargetColumn.findIndex((c) => c.id === overId);
+      if (overIndex === 0) {
+        newPosition = cardsInTargetColumn[0].position - 1;
+      } else if (overIndex === -1) {
+        newPosition = cardsInTargetColumn[cardsInTargetColumn.length - 1].position + 1;
+      } else {
+        const before = cardsInTargetColumn[overIndex - 1].position;
+        const after = cardsInTargetColumn[overIndex].position;
+        newPosition = (before + after) / 2;
+      }
+    }
+
+    if (newStatus === activeCard.status && newPosition === activeCard.position) return;
+
+    moveCard(activeCard.id, newStatus, newPosition);
   };
 
   if (loading) {
@@ -61,44 +111,19 @@ export default function Board() {
         </button>
       </form>
 
-      <div style={{ display: 'flex', gap: '1rem' }}>
-        {COLUMNS.map((column) => {
-          const columnCards = cards
-            .filter((card) => card.status === column.key)
-            .sort((a, b) => a.position - b.position);
+      <DndContext sensors={sensors} collisionDetection={closestCorners} onDragEnd={handleDragEnd}>
+        <div style={{ display: 'flex', gap: '1rem' }}>
+          {COLUMNS.map((column) => {
+            const columnCards = cards
+              .filter((card) => card.status === column.key)
+              .sort((a, b) => a.position - b.position);
 
-          return (
-            <div
-              key={column.key}
-              style={{
-                flex: 1,
-                background: '#ebecf0',
-                borderRadius: '8px',
-                padding: '1rem',
-                minHeight: '400px',
-              }}
-            >
-              <h2 style={{ fontSize: '1rem', marginBottom: '1rem' }}>
-                {column.label} ({columnCards.length})
-              </h2>
-              {columnCards.map((card) => (
-                <div
-                  key={card.id}
-                  style={{
-                    background: 'white',
-                    borderRadius: '6px',
-                    padding: '0.75rem',
-                    marginBottom: '0.5rem',
-                    boxShadow: '0 1px 2px rgba(0,0,0,0.1)',
-                  }}
-                >
-                  {card.title}
-                </div>
-              ))}
-            </div>
-          );
-        })}
-      </div>
+            return (
+              <Column key={column.key} id={column.key} label={column.label} cards={columnCards} />
+            );
+          })}
+        </div>
+      </DndContext>
     </div>
   );
 }

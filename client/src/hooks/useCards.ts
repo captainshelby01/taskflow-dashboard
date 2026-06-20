@@ -36,5 +36,23 @@ export function useCards() {
     [token]
   );
 
-  return { cards, setCards, loading, error, refetch: fetchCards, createCard };
+  const moveCard = useCallback(
+    async (cardId: string, newStatus: Card['status'], newPosition: number) => {
+      if (!token) return;
+
+      setCards((prev) =>
+        prev.map((c) => (c.id === cardId ? { ...c, status: newStatus, position: newPosition } : c))
+      );
+
+      try {
+        await api.put<Card>(`/api/cards/${cardId}`, { status: newStatus, position: newPosition }, token);
+      } catch (err) {
+        console.error('Failed to move card, reverting:', err);
+        fetchCards();
+      }
+    },
+    [token, fetchCards]
+  );
+
+  return { cards, setCards, loading, error, refetch: fetchCards, createCard, moveCard };
 }
