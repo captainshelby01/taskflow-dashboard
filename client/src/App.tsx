@@ -1,5 +1,7 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider, useAuth } from './lib/AuthContext';
+import Login from './pages/Login';
+import Signup from './pages/Signup';
 
 function BoardPlaceholder() {
   const { user, logout } = useAuth();
@@ -10,14 +12,6 @@ function BoardPlaceholder() {
       <button onClick={logout}>Logout</button>
     </div>
   );
-}
-
-function LoginPlaceholder() {
-  return <div style={{ padding: '2rem' }}>Login page (coming next)</div>;
-}
-
-function SignupPlaceholder() {
-  return <div style={{ padding: '2rem' }}>Signup page (coming next)</div>;
 }
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
@@ -31,8 +25,8 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
 function AppRoutes() {
   return (
     <Routes>
-      <Route path="/login" element={<LoginPlaceholder />} />
-      <Route path="/signup" element={<SignupPlaceholder />} />
+      <Route path="/login" element={<Login />} />
+      <Route path="/signup" element={<Signup />} />
       <Route
         path="/"
         element={
