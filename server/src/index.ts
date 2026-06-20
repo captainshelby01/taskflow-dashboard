@@ -3,6 +3,7 @@ dotenv.config();
 
 import express from 'express';
 import authRoutes from './routes/authRoutes';
+import cardRoutes from './routes/cardRoutes';
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -14,6 +15,7 @@ app.get('/health', (req, res) => {
 });
 
 app.use('/api/auth', authRoutes);
+app.use('/api/cards', cardRoutes);
 
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
