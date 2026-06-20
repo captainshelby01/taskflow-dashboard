@@ -1,3 +1,4 @@
+import { useState, FormEvent } from 'react';
 import { useAuth } from '../lib/AuthContext';
 import { useCards } from '../hooks/useCards';
 import type { Card } from '../types';
@@ -10,7 +11,24 @@ const COLUMNS: { key: Card['status']; label: string }[] = [
 
 export default function Board() {
   const { user, logout } = useAuth();
-  const { cards, loading, error } = useCards();
+  const { cards, loading, error, createCard } = useCards();
+  const [newTitle, setNewTitle] = useState('');
+  const [creating, setCreating] = useState(false);
+
+  const handleCreate = async (e: FormEvent) => {
+    e.preventDefault();
+    if (!newTitle.trim()) return;
+
+    setCreating(true);
+    try {
+      await createCard(newTitle.trim());
+      setNewTitle('');
+    } catch (err) {
+      console.error('Failed to create card:', err);
+    } finally {
+      setCreating(false);
+    }
+  };
 
   if (loading) {
     return <div style={{ padding: '2rem' }}>Loading your board...</div>;
@@ -29,6 +47,19 @@ export default function Board() {
           <button onClick={logout}>Logout</button>
         </div>
       </header>
+
+      <form onSubmit={handleCreate} style={{ marginBottom: '2rem', display: 'flex', gap: '0.5rem' }}>
+        <input
+          type="text"
+          value={newTitle}
+          onChange={(e) => setNewTitle(e.target.value)}
+          placeholder="Add a new card to To Do..."
+          style={{ flex: 1, padding: '0.5rem' }}
+        />
+        <button type="submit" disabled={creating}>
+          {creating ? 'Adding...' : 'Add Card'}
+        </button>
+      </form>
 
       <div style={{ display: 'flex', gap: '1rem' }}>
         {COLUMNS.map((column) => {

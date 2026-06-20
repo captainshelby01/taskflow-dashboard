@@ -27,5 +27,14 @@ export function useCards() {
     fetchCards();
   }, [fetchCards]);
 
-  return { cards, setCards, loading, error, refetch: fetchCards };
+  const createCard = useCallback(
+    async (title: string) => {
+      if (!token) return;
+      const newCard = await api.post<Card>('/api/cards', { title, status: 'todo', position: Date.now() }, token);
+      setCards((prev) => [...prev, newCard]);
+    },
+    [token]
+  );
+
+  return { cards, setCards, loading, error, refetch: fetchCards, createCard };
 }
