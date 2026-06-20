@@ -2,10 +2,22 @@ import dotenv from 'dotenv';
 dotenv.config();
 
 import express from 'express';
+import { createServer } from 'http';
+import { Server } from 'socket.io';
 import authRoutes from './routes/authRoutes';
 import cardRoutes from './routes/cardRoutes';
+import { initCardSocket } from './sockets/cardSocket';
+import { setSocketInstance } from './lib/socket';
 
 const app = express();
+const httpServer = createServer(app);
+
+const io = new Server(httpServer, {
+  cors: {
+    origin: process.env.CLIENT_URL || 'http://localhost:5173',
+  },
+});
+
 const PORT = process.env.PORT || 5000;
 
 app.use(express.json());
@@ -17,6 +29,9 @@ app.get('/health', (req, res) => {
 app.use('/api/auth', authRoutes);
 app.use('/api/cards', cardRoutes);
 
-app.listen(PORT, () => {
+initCardSocket(io);
+setSocketInstance(io);
+
+httpServer.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
 });

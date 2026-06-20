@@ -1,6 +1,7 @@
 import { Response } from 'express';
 import prisma from '../lib/prisma';
 import { AuthRequest } from '../middleware/authMiddleware';
+import { getSocketInstance } from '../lib/socket';
 
 export const getCards = async (req: AuthRequest, res: Response) => {
   try {
@@ -34,6 +35,8 @@ export const createCard = async (req: AuthRequest, res: Response) => {
       },
     });
 
+    getSocketInstance().to(req.userId as string).emit('CARD_CREATED', card);
+
     return res.status(201).json(card);
   } catch (error) {
     console.error('Create card error:', error);
@@ -56,6 +59,8 @@ export const updateCard = async (req: AuthRequest, res: Response) => {
       return res.status(403).json({ error: 'You do not have permission to edit this card' });
     }
 
+    const isMove = (status !== undefined || position !== undefined) && title === undefined && description === undefined;
+
     const updatedCard = await prisma.card.update({
       where: { id },
       data: {
@@ -65,6 +70,10 @@ export const updateCard = async (req: AuthRequest, res: Response) => {
         ...(position !== undefined && { position }),
       },
     });
+
+    getSocketInstance()
+      .to(req.userId as string)
+      .emit(isMove ? 'CARD_MOVED' : 'CARD_UPDATED', updatedCard);
 
     return res.status(200).json(updatedCard);
   } catch (error) {
@@ -88,6 +97,8 @@ export const deleteCard = async (req: AuthRequest, res: Response) => {
     }
 
     await prisma.card.delete({ where: { id } });
+
+    getSocketInstance().to(req.userId as string).emit('CARD_DELETED', { id });
 
     return res.status(200).json({ message: 'Card deleted successfully' });
   } catch (error) {
