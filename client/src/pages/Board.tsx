@@ -1,4 +1,5 @@
-import { useState, useCallback, FormEvent } from 'react';
+import { useState, useCallback } from 'react';
+import type { FormEvent } from 'react';
 import { DndContext, PointerSensor, useSensor, useSensors, closestCorners } from '@dnd-kit/core';
 import type { DragEndEvent } from '@dnd-kit/core';
 import { useAuth } from '../lib/AuthContext';
