@@ -12,7 +12,6 @@ export function useCards() {
   const fetchCards = useCallback(async () => {
     if (!token) return;
     try {
-      setLoading(true);
       const data = await api.get<Card[]>('/api/cards', token);
       setCards(data);
       setError('');
@@ -24,6 +23,7 @@ export function useCards() {
   }, [token]);
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- standard data-fetch-on-mount pattern; known false positive, see https://github.com/facebook/react/issues/34743
     fetchCards();
   }, [fetchCards]);
 
@@ -31,7 +31,10 @@ export function useCards() {
     async (title: string) => {
       if (!token) return;
       const newCard = await api.post<Card>('/api/cards', { title, status: 'todo', position: Date.now() }, token);
-      setCards((prev) => [...prev, newCard]);
+      setCards((prev) => {
+        if (prev.some((c) => c.id === newCard.id)) return prev;
+        return [...prev, newCard];
+      });
     },
     [token]
   );

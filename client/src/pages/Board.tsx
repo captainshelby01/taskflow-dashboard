@@ -18,6 +18,7 @@ export default function Board() {
   const { cards, setCards, loading, error, createCard, moveCard } = useCards();
   const [newTitle, setNewTitle] = useState('');
   const [creating, setCreating] = useState(false);
+  const [pulsingIds, setPulsingIds] = useState<Set<string>>(new Set());
 
   const sensors = useSensors(
     useSensor(PointerSensor, {
@@ -25,28 +26,42 @@ export default function Board() {
     })
   );
 
+  const triggerPulse = useCallback((id: string) => {
+    setPulsingIds((prev) => new Set(prev).add(id));
+    setTimeout(() => {
+      setPulsingIds((prev) => {
+        const next = new Set(prev);
+        next.delete(id);
+        return next;
+      });
+    }, 1800);
+  }, []);
+
   const handleCardCreated = useCallback(
     (newCard: Card) => {
       setCards((prev) => {
         if (prev.some((c) => c.id === newCard.id)) return prev;
         return [...prev, newCard];
       });
+      triggerPulse(newCard.id);
     },
-    [setCards]
+    [setCards, triggerPulse]
   );
 
   const handleCardUpdated = useCallback(
     (updatedCard: Card) => {
       setCards((prev) => prev.map((c) => (c.id === updatedCard.id ? updatedCard : c)));
+      triggerPulse(updatedCard.id);
     },
-    [setCards]
+    [setCards, triggerPulse]
   );
 
   const handleCardMoved = useCallback(
     (movedCard: Card) => {
       setCards((prev) => prev.map((c) => (c.id === movedCard.id ? movedCard : c)));
+      triggerPulse(movedCard.id);
     },
-    [setCards]
+    [setCards, triggerPulse]
   );
 
   const handleCardDeleted = useCallback(
@@ -120,45 +135,118 @@ export default function Board() {
   };
 
   if (loading) {
-    return <div style={{ padding: '2rem' }}>Loading your board...</div>;
+    return (
+      <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <p style={{ color: 'var(--ink-soft)', fontFamily: 'var(--font-display)', fontSize: '1.1rem' }}>
+          Loading your board...
+        </p>
+      </div>
+    );
   }
 
   if (error) {
-    return <div style={{ padding: '2rem', color: 'red' }}>Error: {error}</div>;
+    return (
+      <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <p style={{ color: 'var(--clay)' }}>Error: {error}</p>
+      </div>
+    );
   }
 
   return (
-    <div style={{ padding: '2rem' }}>
-      <header style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '2rem' }}>
-        <h1>TaskFlow</h1>
-        <div>
-          <span style={{ marginRight: '1rem' }}>{user?.email}</span>
-          <button onClick={logout}>Logout</button>
+    <div style={{ maxWidth: '1100px', margin: '0 auto', padding: '2.5rem 2rem' }}>
+      <header
+        style={{
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          marginBottom: '2rem',
+        }}
+      >
+        <h1
+          style={{
+            fontFamily: 'var(--font-display)',
+            fontSize: '1.6rem',
+            fontWeight: 600,
+            color: 'var(--ink)',
+          }}
+        >
+          TaskFlow
+        </h1>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+          <span style={{ fontSize: '0.85rem', color: 'var(--ink-soft)' }}>{user?.email}</span>
+          <button
+            onClick={logout}
+            style={{
+              fontSize: '0.85rem',
+              color: 'var(--ink-soft)',
+              background: 'transparent',
+              border: '1px solid var(--border)',
+              borderRadius: 'var(--radius-sm)',
+              padding: '0.4rem 0.9rem',
+            }}
+          >
+            Logout
+          </button>
         </div>
       </header>
 
-      <form onSubmit={handleCreate} style={{ marginBottom: '2rem', display: 'flex', gap: '0.5rem' }}>
+      <form
+        onSubmit={handleCreate}
+        style={{
+          marginBottom: '2rem',
+          display: 'flex',
+          gap: '0.6rem',
+        }}
+      >
         <input
           type="text"
           value={newTitle}
           onChange={(e) => setNewTitle(e.target.value)}
           placeholder="Add a new card to To Do..."
-          style={{ flex: 1, padding: '0.5rem' }}
+          style={{
+            flex: 1,
+            padding: '0.7rem 1rem',
+            borderRadius: 'var(--radius-sm)',
+            border: '1px solid var(--border)',
+            background: 'var(--surface)',
+            fontSize: '0.9rem',
+            outline: 'none',
+          }}
         />
-        <button type="submit" disabled={creating}>
+        <button
+          type="submit"
+          disabled={creating}
+          style={{
+            padding: '0.7rem 1.3rem',
+            borderRadius: 'var(--radius-sm)',
+            border: 'none',
+            background: 'var(--moss)',
+            color: 'var(--surface)',
+            fontSize: '0.9rem',
+            fontWeight: 500,
+            opacity: creating ? 0.7 : 1,
+            whiteSpace: 'nowrap',
+          }}
+        >
           {creating ? 'Adding...' : 'Add Card'}
         </button>
       </form>
 
       <DndContext sensors={sensors} collisionDetection={closestCorners} onDragEnd={handleDragEnd}>
-        <div style={{ display: 'flex', gap: '1rem' }}>
+        <div style={{ display: 'flex', gap: '1.5rem' }}>
           {COLUMNS.map((column) => {
             const columnCards = cards
               .filter((card) => card.status === column.key)
               .sort((a, b) => a.position - b.position);
 
             return (
-              <Column key={column.key} id={column.key} label={column.label} cards={columnCards} />
+              <Column
+                key={column.key}
+                id={column.key}
+                label={column.label}
+                cards={columnCards}
+                pulsingIds={pulsingIds}
+              />
             );
           })}
         </div>
