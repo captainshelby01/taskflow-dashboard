@@ -1,8 +1,9 @@
-import { useState, FormEvent } from 'react';
+import { useState, useCallback, FormEvent } from 'react';
 import { DndContext, PointerSensor, useSensor, useSensors, closestCorners } from '@dnd-kit/core';
 import type { DragEndEvent } from '@dnd-kit/core';
 import { useAuth } from '../lib/AuthContext';
 import { useCards } from '../hooks/useCards';
+import { useSocket } from '../hooks/useSocket';
 import Column from '../components/Column';
 import type { Card } from '../types';
 
@@ -14,7 +15,7 @@ const COLUMNS: { key: Card['status']; label: string }[] = [
 
 export default function Board() {
   const { user, logout } = useAuth();
-  const { cards, loading, error, createCard, moveCard } = useCards();
+  const { cards, setCards, loading, error, createCard, moveCard } = useCards();
   const [newTitle, setNewTitle] = useState('');
   const [creating, setCreating] = useState(false);
 
@@ -23,6 +24,44 @@ export default function Board() {
       activationConstraint: { distance: 5 },
     })
   );
+
+  const handleCardCreated = useCallback(
+    (newCard: Card) => {
+      setCards((prev) => {
+        if (prev.some((c) => c.id === newCard.id)) return prev;
+        return [...prev, newCard];
+      });
+    },
+    [setCards]
+  );
+
+  const handleCardUpdated = useCallback(
+    (updatedCard: Card) => {
+      setCards((prev) => prev.map((c) => (c.id === updatedCard.id ? updatedCard : c)));
+    },
+    [setCards]
+  );
+
+  const handleCardMoved = useCallback(
+    (movedCard: Card) => {
+      setCards((prev) => prev.map((c) => (c.id === movedCard.id ? movedCard : c)));
+    },
+    [setCards]
+  );
+
+  const handleCardDeleted = useCallback(
+    (data: { id: string }) => {
+      setCards((prev) => prev.filter((c) => c.id !== data.id));
+    },
+    [setCards]
+  );
+
+  useSocket({
+    onCardCreated: handleCardCreated,
+    onCardUpdated: handleCardUpdated,
+    onCardMoved: handleCardMoved,
+    onCardDeleted: handleCardDeleted,
+  });
 
   const handleCreate = async (e: FormEvent) => {
     e.preventDefault();
