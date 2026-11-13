@@ -19,7 +19,7 @@ export const getCards = async (req: AuthRequest, res: Response) => {
 
 export const createCard = async (req: AuthRequest, res: Response) => {
   try {
-    const { title, description, status, position } = req.body;
+    const { title, description, status, position, priority, dueDate } = req.body;
 
     if (!title) {
       return res.status(400).json({ error: 'Title is required' });
@@ -30,6 +30,8 @@ export const createCard = async (req: AuthRequest, res: Response) => {
         title,
         description: description || null,
         status: status || 'todo',
+        priority: priority || 'medium',
+        dueDate: dueDate || null,
         position: position ?? 0,
         userId: req.userId as string,
       },
@@ -47,7 +49,7 @@ export const createCard = async (req: AuthRequest, res: Response) => {
 export const updateCard = async (req: AuthRequest, res: Response) => {
   try {
     const { id } = req.params as { id: string };
-    const { title, description, status, position } = req.body;
+    const { title, description, status, position, priority, dueDate } = req.body;
 
     const existingCard = await prisma.card.findUnique({ where: { id } });
 
@@ -59,7 +61,7 @@ export const updateCard = async (req: AuthRequest, res: Response) => {
       return res.status(403).json({ error: 'You do not have permission to edit this card' });
     }
 
-    const isMove = (status !== undefined || position !== undefined) && title === undefined && description === undefined;
+    const isMove = (status !== undefined || position !== undefined) && title === undefined && description === undefined && priority === undefined && dueDate === undefined;
 
     const updatedCard = await prisma.card.update({
       where: { id },
@@ -67,6 +69,8 @@ export const updateCard = async (req: AuthRequest, res: Response) => {
         ...(title !== undefined && { title }),
         ...(description !== undefined && { description }),
         ...(status !== undefined && { status }),
+        ...(priority !== undefined && { priority }),
+        ...(dueDate !== undefined && { dueDate }),
         ...(position !== undefined && { position }),
       },
     });

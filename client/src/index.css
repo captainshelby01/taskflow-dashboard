@@ -65,3 +65,19 @@ input {
 .card-pulse {
   animation: pulse-ring 1.8s ease-out;
 }
+
+@keyframes slideInRight {
+  from {
+    transform: translateX(100%);
+    opacity: 0.8;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+kbd {
+  font-family: var(--font-mono);
+  box-shadow: 0 1px 1px rgba(26, 29, 41, 0.08);
+}

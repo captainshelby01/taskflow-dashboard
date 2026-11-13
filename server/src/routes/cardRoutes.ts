@@ -9,6 +9,7 @@ router.use(authenticate);
 router.get('/', getCards);
 router.post('/', createCard);
 router.put('/:id', updateCard);
+router.patch('/:id', updateCard);
 router.delete('/:id', deleteCard);
 
 export default router;

@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { api } from '../lib/api';
 import { useAuth } from '../lib/AuthContext';
-import type { Card } from '../types';
+import type { Card, Priority } from '../types';
 
 export function useCards() {
   const { token } = useAuth();
@@ -28,15 +28,60 @@ export function useCards() {
   }, [fetchCards]);
 
   const createCard = useCallback(
-    async (title: string) => {
+    async (title: string, status: Card['status'] = 'todo', priority: Priority = 'medium', dueDate?: string | null) => {
       if (!token) return;
-      const newCard = await api.post<Card>('/api/cards', { title, status: 'todo', position: Date.now() }, token);
+      const newCard = await api.post<Card>(
+        '/api/cards',
+        { title, status, priority, dueDate: dueDate || null, position: Date.now() },
+        token
+      );
       setCards((prev) => {
         if (prev.some((c) => c.id === newCard.id)) return prev;
         return [...prev, newCard];
       });
+      return newCard;
     },
     [token]
+  );
+
+  const updateCard = useCallback(
+    async (cardId: string, updates: Partial<Card>) => {
+      if (!token) return;
+
+      // Optimistic update
+      setCards((prev) =>
+        prev.map((c) => (c.id === cardId ? { ...c, ...updates, updatedAt: new Date().toISOString() } : c))
+      );
+
+      try {
+        const updated = await api.put<Card>(`/api/cards/${cardId}`, updates, token);
+        setCards((prev) => prev.map((c) => (c.id === cardId ? updated : c)));
+        return updated;
+      } catch (err) {
+        console.error('Failed to update card, reverting:', err);
+        fetchCards();
+        throw err;
+      }
+    },
+    [token, fetchCards]
+  );
+
+  const deleteCard = useCallback(
+    async (cardId: string) => {
+      if (!token) return;
+
+      // Optimistic delete
+      setCards((prev) => prev.filter((c) => c.id !== cardId));
+
+      try {
+        await api.delete(`/api/cards/${cardId}`, token);
+      } catch (err) {
+        console.error('Failed to delete card, reverting:', err);
+        fetchCards();
+        throw err;
+      }
+    },
+    [token, fetchCards]
   );
 
   const moveCard = useCallback(
@@ -57,5 +102,15 @@ export function useCards() {
     [token, fetchCards]
   );
 
-  return { cards, setCards, loading, error, refetch: fetchCards, createCard, moveCard };
+  return {
+    cards,
+    setCards,
+    loading,
+    error,
+    refetch: fetchCards,
+    createCard,
+    updateCard,
+    deleteCard,
+    moveCard,
+  };
 }

@@ -1,3 +1,5 @@
+export type Priority = 'urgent' | 'high' | 'medium' | 'low';
+
 export interface User {
   id: string;
   email: string;
@@ -9,6 +11,8 @@ export interface Card {
   title: string;
   description: string | null;
   status: 'todo' | 'in_progress' | 'done';
+  priority?: Priority;
+  dueDate?: string | null;
   position: number;
   createdAt: string;
   updatedAt: string;
