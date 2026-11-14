@@ -12,6 +12,7 @@ interface ColumnProps {
   pulsingIds: Set<string>;
   onSelectCard?: (card: Card) => void;
   onAddCard?: (title: string, status: Card['status']) => Promise<void>;
+  onMoveCardStatus?: (cardId: string, targetStatus: Card['status']) => void;
 }
 
 const STATUS_ICON_CLASS: Record<Card['status'], string> = {
@@ -20,7 +21,7 @@ const STATUS_ICON_CLASS: Record<Card['status'], string> = {
   done: 'bi-check-circle-fill',
 };
 
-export default function Column({ id, label, cards, pulsingIds, onSelectCard, onAddCard }: ColumnProps) {
+export default function Column({ id, label, cards, pulsingIds, onSelectCard, onAddCard, onMoveCardStatus }: ColumnProps) {
   const { setNodeRef, isOver } = useDroppable({ id });
   const [isAdding, setIsAdding] = useState(false);
   const [inlineTitle, setInlineTitle] = useState('');
@@ -116,6 +117,7 @@ export default function Column({ id, label, cards, pulsingIds, onSelectCard, onA
             card={card}
             isPulsing={pulsingIds.has(card.id)}
             onSelect={onSelectCard}
+            onMoveStatus={onMoveCardStatus}
           />
         ))}
       </SortableContext>

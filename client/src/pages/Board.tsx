@@ -3,10 +3,12 @@ import type { FormEvent } from 'react';
 import {
   DndContext,
   PointerSensor,
+  TouchSensor,
   useSensor,
   useSensors,
   closestCorners,
   DragOverlay,
+  useDroppable,
 } from '@dnd-kit/core';
 import type { DragStartEvent, DragEndEvent } from '@dnd-kit/core';
 import { useAuth } from '../lib/AuthContext';
@@ -31,6 +33,34 @@ const COLUMNS: { key: Card['status']; label: string }[] = [
   { key: 'done', label: 'Done' },
 ];
 
+function DroppableMobileTab({
+  columnKey,
+  label,
+  count,
+  isActive,
+  onSelect,
+}: {
+  columnKey: Card['status'];
+  label: string;
+  count: number;
+  isActive: boolean;
+  onSelect: () => void;
+}) {
+  const { setNodeRef, isOver } = useDroppable({ id: columnKey });
+
+  return (
+    <button
+      ref={setNodeRef}
+      type="button"
+      onClick={onSelect}
+      className={`mobile-column-tab-btn ${isActive ? 'active' : ''} ${isOver ? 'tab-drop-target' : ''}`}
+    >
+      <span>{label}</span>
+      <span className="tab-count">{count}</span>
+    </button>
+  );
+}
+
 export default function Board() {
   const { user, logout } = useAuth();
   const { cards, setCards, loading, error, createCard, updateCard, deleteCard, moveCard } = useCards();
@@ -46,6 +76,7 @@ export default function Board() {
   const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
   const [isCaseStudyOpen, setIsCaseStudyOpen] = useState(false);
   const [isResolvingBlocker, setIsResolvingBlocker] = useState(false);
+  const [activeMobileColumn, setActiveMobileColumn] = useState<Card['status']>('todo');
   const profileMenuRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const { theme, toggleTheme } = useTheme();
@@ -67,7 +98,35 @@ export default function Board() {
   const sensors = useSensors(
     useSensor(PointerSensor, {
       activationConstraint: { distance: 4 },
+    }),
+    useSensor(TouchSensor, {
+      activationConstraint: { delay: 200, tolerance: 6 },
     })
+  );
+
+  const handleMoveCardStatus = useCallback(
+    (cardId: string, newStatus: Card['status']) => {
+      const card = cards.find((c) => c.id === cardId);
+      if (!card || card.status === newStatus) return;
+
+      const cardsInTarget = cards
+        .filter((c) => c.status === newStatus && c.id !== cardId)
+        .sort((a, b) => a.position - b.position);
+      const newPos =
+        cardsInTarget.length > 0
+          ? cardsInTarget[cardsInTarget.length - 1].position + 1
+          : 0;
+
+      if (newStatus === 'done' && card.status !== 'done') {
+        playHaptic('complete');
+        triggerConfetti();
+      } else {
+        playHaptic('drop');
+      }
+
+      moveCard(cardId, newStatus, newPos);
+    },
+    [cards, moveCard]
   );
 
   const triggerPulse = useCallback((id: string) => {
@@ -259,6 +318,10 @@ export default function Board() {
 
     if (newStatus === activeCardItem.status && newPosition === activeCardItem.position) return;
 
+    if (newStatus !== activeMobileColumn) {
+      setActiveMobileColumn(newStatus);
+    }
+
     moveCard(activeCardItem.id, newStatus, newPosition);
   };
 
@@ -366,30 +429,21 @@ export default function Board() {
   }
 
   return (
-    <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '2rem 2rem 4rem 2rem' }}>
+    <div className="board-main-container">
       {/* ── Tier 1: Global Navigation Bar (Brand, Project Switcher, ⌘K Search, Collaborators, Settings) ── */}
-      <header
-        style={{
-          display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'center',
-          marginBottom: '1.75rem',
-          paddingBottom: '0.85rem',
-          borderBottom: '1px solid var(--border)',
-          position: 'relative',
-        }}
-      >
+      <header className="global-nav-header">
         {/* Left: Brand + Project Switcher + Silent Sync Status */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '0.85rem' }}>
+        <div className="global-nav-left">
           <Logo size="sm" showBadge={false} />
-          <span style={{ color: 'var(--border)', fontSize: '1rem', fontWeight: 300 }}>/</span>
+          <span style={{ color: 'var(--border)', fontSize: '0.9rem', fontWeight: 300, userSelect: 'none' }}>/</span>
 
           <div
             style={{
               display: 'inline-flex',
               alignItems: 'center',
-              gap: '0.45rem',
-              padding: '0.3rem 0.65rem',
+              gap: '0.4rem',
+              height: '34px',
+              padding: '0 0.65rem',
               borderRadius: 'var(--radius-sm)',
               background: 'var(--surface)',
               border: '1px solid var(--border)',
@@ -397,23 +451,33 @@ export default function Board() {
               fontWeight: 600,
               color: 'var(--ink)',
               cursor: 'pointer',
+              whiteSpace: 'nowrap',
+              flexShrink: 0,
+              boxShadow: 'var(--shadow-sm)',
             }}
             title="Current Workspace and Project"
           >
-            <span style={{ color: 'var(--ink-soft)', fontWeight: 400 }}>Acme Corp /</span>
+            <span className="workspace-org-label" style={{ color: 'var(--ink-soft)', fontWeight: 400 }}>Acme Corp /</span>
             <span>Checkout Redesign</span>
-            <span style={{ fontSize: '0.65rem', color: 'var(--ink-soft)' }}>▾</span>
+            <span style={{ fontSize: '0.65rem', color: 'var(--ink-soft)', marginLeft: '0.15rem' }}>▾</span>
           </div>
 
           {/* Subtle Silent Connected Dot */}
           <div
+            className="nav-saved-pill"
             style={{
               display: 'inline-flex',
               alignItems: 'center',
               gap: '0.35rem',
+              height: '34px',
+              padding: '0 0.55rem',
+              borderRadius: 'var(--radius-sm)',
               fontSize: '0.74rem',
               color: 'var(--ink-soft)',
-              marginLeft: '0.25rem',
+              background: 'var(--surface)',
+              border: '1px solid var(--border)',
+              whiteSpace: 'nowrap',
+              flexShrink: 0,
             }}
             title="Connected to real-time engine · Changes save instantly"
           >
@@ -426,85 +490,81 @@ export default function Board() {
                 boxShadow: '0 0 6px rgba(16, 185, 129, 0.5)',
               }}
             />
-            <span style={{ fontSize: '0.74rem' }}>Saved</span>
+            <span style={{ fontWeight: 500 }}>Saved</span>
           </div>
         </div>
 
         {/* Center: Spotlight Search Launcher */}
-        <button
-          onClick={() => {
-            setIsPaletteOpen(true);
-            playHaptic('click');
-          }}
-          title="Open Command Palette (⌘K or /)"
-          style={{
-            display: 'inline-flex',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-            width: '260px',
-            padding: '0.42rem 0.85rem',
-            borderRadius: 'var(--radius-sm)',
-            background: 'var(--surface)',
-            border: '1px solid var(--border)',
-            color: 'var(--ink-soft)',
-            fontSize: '0.82rem',
-            cursor: 'pointer',
-            boxShadow: 'var(--shadow-sm)',
-            transition: 'border-color 0.15s ease',
-          }}
-          onMouseEnter={(e) => {
-            e.currentTarget.style.borderColor = 'var(--moss)';
-          }}
-          onMouseLeave={(e) => {
-            e.currentTarget.style.borderColor = 'var(--border)';
-          }}
-        >
-          <span style={{ display: 'flex', alignItems: 'center', gap: '0.45rem' }}>
-            <i className="bi bi-search" style={{ fontSize: '0.8rem' }}></i>
-            <span>Search or jump to...</span>
-          </span>
-          <kbd
-            style={{
-              fontFamily: 'var(--font-mono)',
-              fontSize: '0.7rem',
-              background: 'var(--paper)',
-              padding: '0.15rem 0.4rem',
-              borderRadius: '3px',
-              border: '1px solid var(--border)',
-              color: 'var(--ink)',
+        <div className="global-nav-center">
+          <button
+            onClick={() => {
+              setIsPaletteOpen(true);
+              playHaptic('click');
+            }}
+            title="Open Command Palette (⌘K or /)"
+            className="spotlight-search-btn"
+            onMouseEnter={(e) => {
+              e.currentTarget.style.borderColor = 'var(--moss)';
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.borderColor = 'var(--border)';
             }}
           >
-            ⌘K
-          </kbd>
-        </button>
+            <span style={{ display: 'flex', alignItems: 'center', gap: '0.45rem' }}>
+              <i className="bi bi-search" style={{ fontSize: '0.8rem' }}></i>
+              <span>Search or jump to...</span>
+            </span>
+            <kbd
+              style={{
+                fontFamily: 'var(--font-mono)',
+                fontSize: '0.68rem',
+                background: 'var(--paper)',
+                padding: '0.15rem 0.35rem',
+                borderRadius: '3px',
+                border: '1px solid var(--border)',
+                color: 'var(--ink)',
+              }}
+            >
+              ⌘K
+            </kbd>
+          </button>
+        </div>
 
         {/* Right: Collaborator Avatars (Human Terminology) + Profile Dropdown Menu */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '0.85rem' }}>
+        <div className="global-nav-right">
           {/* Collaborator Avatars */}
           <div
+            className="collaborators-pill"
             style={{
-              display: 'flex',
+              display: 'inline-flex',
               alignItems: 'center',
               gap: '0.45rem',
+              height: '34px',
+              padding: '0 0.55rem',
+              borderRadius: 'var(--radius-sm)',
+              background: 'var(--surface)',
+              border: '1px solid var(--border)',
               fontSize: '0.75rem',
               color: 'var(--ink-soft)',
+              whiteSpace: 'nowrap',
+              flexShrink: 0,
             }}
             title="Sarah K. and Alex M. are collaborating on this release"
           >
-            <div style={{ display: 'flex', marginLeft: '2px' }}>
+            <div style={{ display: 'flex', marginLeft: '1px' }}>
               <span
                 style={{
-                  width: '22px',
-                  height: '22px',
+                  width: '20px',
+                  height: '20px',
                   borderRadius: '50%',
                   background: '#6366f1',
                   color: '#fff',
-                  fontSize: '0.65rem',
+                  fontSize: '0.62rem',
                   fontWeight: 700,
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
-                  border: '2px solid var(--surface)',
+                  border: '1.5px solid var(--surface)',
                 }}
                 title="Sarah K. (Lead Engineer)"
               >
@@ -512,25 +572,25 @@ export default function Board() {
               </span>
               <span
                 style={{
-                  width: '22px',
-                  height: '22px',
+                  width: '20px',
+                  height: '20px',
                   borderRadius: '50%',
                   background: '#ec4899',
                   color: '#fff',
-                  fontSize: '0.65rem',
+                  fontSize: '0.62rem',
                   fontWeight: 700,
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
                   marginLeft: '-6px',
-                  border: '2px solid var(--surface)',
+                  border: '1.5px solid var(--surface)',
                 }}
                 title="Alex M. (Payment Integrations)"
               >
                 AM
               </span>
             </div>
-            <span style={{ fontWeight: 500 }}>2 online</span>
+            <span className="online-count-label" style={{ fontWeight: 500 }}>2 online</span>
           </div>
 
           {/* Profile & Settings Menu Dropdown */}
@@ -542,10 +602,11 @@ export default function Board() {
                 playHaptic('click');
               }}
               style={{
-                display: 'flex',
+                display: 'inline-flex',
                 alignItems: 'center',
                 gap: '0.45rem',
-                padding: '0.3rem 0.65rem',
+                height: '34px',
+                padding: '0 0.65rem',
                 borderRadius: 'var(--radius-sm)',
                 background: 'var(--surface)',
                 border: '1px solid var(--border)',
@@ -553,6 +614,9 @@ export default function Board() {
                 fontSize: '0.8rem',
                 fontWeight: 600,
                 cursor: 'pointer',
+                whiteSpace: 'nowrap',
+                flexShrink: 0,
+                boxShadow: 'var(--shadow-sm)',
               }}
             >
               <span
@@ -562,7 +626,7 @@ export default function Board() {
                   borderRadius: '50%',
                   background: 'var(--ink)',
                   color: 'var(--surface)',
-                  fontSize: '0.68rem',
+                  fontSize: '0.65rem',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
@@ -571,7 +635,9 @@ export default function Board() {
               >
                 {user?.email?.charAt(0).toUpperCase() || 'D'}
               </span>
-              <span>{user?.email || 'demo@taskflow.dev'}</span>
+              <span className="user-email-label" style={{ maxWidth: '120px', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                {user?.email || 'demo@taskflow.dev'}
+              </span>
               <span style={{ fontSize: '0.65rem', color: 'var(--ink-soft)' }}>▾</span>
             </button>
 
@@ -718,7 +784,8 @@ export default function Board() {
               display: 'inline-flex',
               alignItems: 'center',
               gap: '0.35rem',
-              padding: '0.35rem 0.65rem',
+              height: '34px',
+              padding: '0 0.75rem',
               borderRadius: 'var(--radius-sm)',
               background: 'var(--paper)',
               border: '1px solid var(--border)',
@@ -726,6 +793,9 @@ export default function Board() {
               fontWeight: 600,
               color: 'var(--ink)',
               cursor: 'pointer',
+              whiteSpace: 'nowrap',
+              flexShrink: 0,
+              boxShadow: 'var(--shadow-sm)',
               transition: 'all 0.15s ease',
             }}
             title="Read Design Engineering Case Study & Trade-offs"
@@ -753,7 +823,7 @@ export default function Board() {
             <h1
               style={{
                 fontFamily: 'var(--font-display)',
-                fontSize: '1.75rem',
+                fontSize: 'clamp(1.35rem, 4vw, 1.75rem)',
                 fontWeight: 800,
                 color: 'var(--ink)',
                 letterSpacing: '-0.035em',
@@ -862,19 +932,7 @@ export default function Board() {
         </div>
 
         {/* Row 2: Honest Release Status & Blocker Ribbon */}
-        <div
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-            background: 'var(--surface)',
-            border: '1px solid var(--border)',
-            borderRadius: 'var(--radius-md)',
-            padding: '0.65rem 1rem',
-            flexWrap: 'wrap',
-            gap: '0.75rem',
-          }}
-        >
+        <div className="status-ribbon-container">
           {/* Left Status Badges */}
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.85rem', flexWrap: 'wrap' }}>
             {/* Target Date */}
@@ -1105,6 +1163,7 @@ export default function Board() {
         </div>
 
         <div
+          className="mobile-hide"
           style={{
             display: 'flex',
             alignItems: 'center',
@@ -1161,25 +1220,52 @@ export default function Board() {
           onDragCancel={handleDragCancel}
           onDragEnd={handleDragEnd}
         >
-          <div style={{ display: 'flex', gap: '1.5rem', alignItems: 'flex-start' }}>
+          {/* Mobile Column Switcher Tabs (Droppable Drop Targets for touch & drag) */}
+          <div className="mobile-column-tabs">
+            {COLUMNS.map((col) => {
+              const count = filteredCards.filter((card) => card.status === col.key).length;
+              const isActive = activeMobileColumn === col.key;
+              return (
+                <DroppableMobileTab
+                  key={col.key}
+                  columnKey={col.key}
+                  label={col.label}
+                  count={count}
+                  isActive={isActive}
+                  onSelect={() => {
+                    setActiveMobileColumn(col.key);
+                    playHaptic('click');
+                  }}
+                />
+              );
+            })}
+          </div>
+
+          <div className="kanban-columns-container">
             {COLUMNS.map((column) => {
               const columnCards = filteredCards
                 .filter((card) => card.status === column.key)
                 .sort((a, b) => a.position - b.position);
 
               return (
-                <Column
+                <div
                   key={column.key}
-                  id={column.key}
-                  label={column.label}
-                  cards={columnCards}
-                  pulsingIds={pulsingIds}
-                  onSelectCard={(card) => {
-                    setSelectedCardId(card.id);
-                    playHaptic('click');
-                  }}
-                  onAddCard={handleInlineCreate}
-                />
+                  className={`kanban-column-wrapper ${activeMobileColumn === column.key ? 'active-mobile-column' : ''}`}
+                  style={{ flex: 1, minWidth: 0 }}
+                >
+                  <Column
+                    id={column.key}
+                    label={column.label}
+                    cards={columnCards}
+                    pulsingIds={pulsingIds}
+                    onSelectCard={(card) => {
+                      setSelectedCardId(card.id);
+                      playHaptic('click');
+                    }}
+                    onAddCard={handleInlineCreate}
+                    onMoveCardStatus={handleMoveCardStatus}
+                  />
+                </div>
               );
             })}
           </div>

@@ -123,6 +123,7 @@ export default function CardDrawer({ card, isOpen, onClose, onUpdate, onDelete }
         role="dialog"
         aria-modal="true"
         aria-label="Card Details Inspector"
+        className="responsive-drawer-panel"
         style={{
           position: 'fixed',
           top: 0,

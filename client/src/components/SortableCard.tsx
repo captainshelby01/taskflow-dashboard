@@ -22,6 +22,7 @@ interface CardViewProps {
   isOverlay?: boolean;
   style?: React.CSSProperties;
   onClick?: () => void;
+  onMoveStatus?: (cardId: string, targetStatus: Card['status']) => void;
   attributes?: Record<string, unknown>;
   listeners?: Record<string, unknown>;
   innerRef?: (node: HTMLElement | null) => void;
@@ -34,6 +35,7 @@ export function CardView({
   isOverlay,
   style,
   onClick,
+  onMoveStatus,
   attributes,
   listeners,
   innerRef,
@@ -95,18 +97,67 @@ export function CardView({
           marginBottom: '0.45rem',
         }}
       >
-        <span
-          style={{
-            fontFamily: 'var(--font-mono)',
-            fontSize: '0.72rem',
-            fontWeight: 600,
-            color: 'var(--ink-soft)',
-            letterSpacing: '0.04em',
-            opacity: 0.75,
-          }}
-        >
-          #TF-{shortId}
-        </span>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.45rem' }}>
+          <span
+            style={{
+              fontFamily: 'var(--font-mono)',
+              fontSize: '0.72rem',
+              fontWeight: 600,
+              color: 'var(--ink-soft)',
+              letterSpacing: '0.04em',
+              opacity: 0.75,
+            }}
+          >
+            #TF-{shortId}
+          </span>
+
+          {onMoveStatus && (
+            <div
+              style={{ position: 'relative', display: 'inline-flex', alignItems: 'center' }}
+              onClick={(e) => e.stopPropagation()}
+              onPointerDown={(e) => e.stopPropagation()}
+            >
+              <select
+                aria-label={`Change status of task ${card.title}`}
+                value={card.status}
+                onChange={(e) => {
+                  e.stopPropagation();
+                  onMoveStatus(card.id, e.target.value as Card['status']);
+                }}
+                style={{
+                  appearance: 'none',
+                  WebkitAppearance: 'none',
+                  background: 'var(--paper)',
+                  border: '1px solid var(--border)',
+                  borderRadius: 'var(--radius-sm)',
+                  fontSize: '0.67rem',
+                  fontWeight: 600,
+                  color: 'var(--ink)',
+                  padding: '0.12rem 1.15rem 0.12rem 0.4rem',
+                  cursor: 'pointer',
+                  fontFamily: 'var(--font-mono)',
+                  boxShadow: 'var(--shadow-sm)',
+                  lineHeight: 1.3,
+                }}
+                title="Move task to another column"
+              >
+                <option value="todo">○ To Do</option>
+                <option value="in_progress">◐ In Progress</option>
+                <option value="done">● Done</option>
+              </select>
+              <i
+                className="bi bi-chevron-expand"
+                style={{
+                  position: 'absolute',
+                  right: '0.25rem',
+                  pointerEvents: 'none',
+                  fontSize: '0.6rem',
+                  color: 'var(--ink-soft)',
+                }}
+              />
+            </div>
+          )}
+        </div>
 
         <span
           style={{
@@ -287,9 +338,10 @@ interface SortableCardProps {
   card: Card;
   isPulsing?: boolean;
   onSelect?: (card: Card) => void;
+  onMoveStatus?: (cardId: string, targetStatus: Card['status']) => void;
 }
 
-export default function SortableCard({ card, isPulsing, onSelect }: SortableCardProps) {
+export default function SortableCard({ card, isPulsing, onSelect, onMoveStatus }: SortableCardProps) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
     id: card.id,
   });
@@ -308,6 +360,7 @@ export default function SortableCard({ card, isPulsing, onSelect }: SortableCard
       style={style}
       attributes={attributes as unknown as Record<string, unknown>}
       listeners={listeners as unknown as Record<string, unknown>}
+      onMoveStatus={onMoveStatus}
       onClick={() => {
         if (!isDragging && onSelect) {
           onSelect(card);

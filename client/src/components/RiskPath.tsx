@@ -155,19 +155,7 @@ export default function RiskPath({
       </div>
 
       {/* 3-Node Causal Pipeline */}
-      <div
-        style={{
-          display: 'grid',
-          gridTemplateColumns: '1fr auto 1fr auto 1fr',
-          alignItems: 'center',
-          gap: '0.75rem',
-          background: 'var(--paper)',
-          padding: '0.85rem 1rem',
-          borderRadius: 'var(--radius-sm)',
-          border: '1px solid var(--border)',
-          overflowX: 'auto',
-        }}
-      >
+      <div className="risk-path-pipeline">
         {/* Node 1: Root Blocker */}
         <div
           onClick={() => handleNodeClick(blockerCard)}
@@ -259,10 +247,10 @@ export default function RiskPath({
           </div>
         </div>
 
-        {/* Connector 1 */}
+        {/* Connector 1 (Desktop Horizontal) */}
         <div
+          className="risk-connector-horizontal"
           style={{
-            display: 'flex',
             flexDirection: 'column',
             alignItems: 'center',
             justifyContent: 'center',
@@ -277,6 +265,17 @@ export default function RiskPath({
         >
           <span>{isBlockerResolved ? 'cleared' : 'blocks'}</span>
           <i className="bi bi-arrow-right" style={{ fontSize: '0.95rem' }}></i>
+        </div>
+
+        {/* Connector 1 (Mobile Vertical) */}
+        <div
+          className="risk-connector-vertical"
+          style={{
+            color: isBlockerResolved ? 'var(--moss)' : '#ef4444',
+          }}
+        >
+          <span>{isBlockerResolved ? 'cleared' : 'blocks'}</span>
+          <i className="bi bi-arrow-down" style={{ fontSize: '0.9rem' }}></i>
         </div>
 
         {/* Node 2: Dependent Work */}
@@ -368,10 +367,10 @@ export default function RiskPath({
           </div>
         </div>
 
-        {/* Connector 2 */}
+        {/* Connector 2 (Desktop Horizontal) */}
         <div
+          className="risk-connector-horizontal"
           style={{
-            display: 'flex',
             flexDirection: 'column',
             alignItems: 'center',
             justifyContent: 'center',
@@ -386,6 +385,17 @@ export default function RiskPath({
         >
           <span>{isBlockerResolved ? 'enables' : 'threatens'}</span>
           <i className="bi bi-arrow-right" style={{ fontSize: '0.95rem' }}></i>
+        </div>
+
+        {/* Connector 2 (Mobile Vertical) */}
+        <div
+          className="risk-connector-vertical"
+          style={{
+            color: isBlockerResolved ? 'var(--moss)' : 'var(--ink-soft)',
+          }}
+        >
+          <span>{isBlockerResolved ? 'enables' : 'threatens'}</span>
+          <i className="bi bi-arrow-down" style={{ fontSize: '0.9rem' }}></i>
         </div>
 
         {/* Node 3: Release Target */}

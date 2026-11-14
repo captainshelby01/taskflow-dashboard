@@ -78,8 +78,9 @@ export default function Login() {
       >
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.85rem' }}>
           <Logo size="sm" showBadge={false} />
-          <span style={{ color: 'var(--border)', fontSize: '0.9rem' }}>/</span>
+          <span className="mobile-hide" style={{ color: 'var(--border)', fontSize: '0.9rem' }}>/</span>
           <span
+            className="mobile-hide"
             style={{
               fontFamily: 'var(--font-mono)',
               fontSize: '0.74rem',
@@ -147,19 +148,7 @@ export default function Login() {
       </header>
 
       {/* ── Main Split Hero: Editorial Action + Tangible Risk Map Preview ── */}
-      <main
-        style={{
-          flex: 1,
-          width: '100%',
-          maxWidth: '1240px',
-          margin: '0 auto',
-          padding: '3rem 2rem 4rem 2rem',
-          display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fit, minmax(460px, 1fr))',
-          gap: '3.5rem',
-          alignItems: 'center',
-        }}
-      >
+      <main className="login-split-container">
         {/* Left Column: Problem-First Editorial & One-Click Access */}
         <div>
           <div
@@ -187,7 +176,7 @@ export default function Login() {
           <h1
             style={{
               fontFamily: 'var(--font-display)',
-              fontSize: '2.5rem',
+              fontSize: 'clamp(1.75rem, 5vw, 2.5rem)',
               fontWeight: 800,
               color: 'var(--ink)',
               letterSpacing: '-0.035em',
@@ -519,14 +508,7 @@ export default function Login() {
                   Causal Dependency Chain
                 </div>
 
-                <div
-                  style={{
-                    display: 'grid',
-                    gridTemplateColumns: '1fr auto 1fr',
-                    gap: '0.65rem',
-                    alignItems: 'center',
-                  }}
-                >
+                <div className="preview-causal-grid">
                   {/* Node 1 */}
                   <div
                     style={{
@@ -547,10 +529,16 @@ export default function Login() {
                     <span style={{ fontSize: '0.7rem', color: 'var(--ink-soft)' }}>Sarah K. · Nov 13</span>
                   </div>
 
-                  {/* Arrow */}
-                  <div style={{ color: '#ef4444', fontSize: '0.75rem', fontWeight: 700, textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                  {/* Horizontal Arrow (Desktop) */}
+                  <div className="preview-causal-arrow-h" style={{ color: '#ef4444', fontSize: '0.75rem', fontWeight: 700, textAlign: 'center' }}>
                     <span>blocks</span>
                     <i className="bi bi-arrow-right"></i>
+                  </div>
+
+                  {/* Vertical Arrow (Mobile) */}
+                  <div className="preview-causal-arrow-v">
+                    <span>blocks</span>
+                    <i className="bi bi-arrow-down"></i>
                   </div>
 
                   {/* Node 2 */}

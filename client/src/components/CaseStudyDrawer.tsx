@@ -27,6 +27,7 @@ export default function CaseStudyDrawer({ isOpen, onClose }: CaseStudyDrawerProp
         role="dialog"
         aria-modal="true"
         aria-label="Case Study and Design Decisions"
+        className="responsive-drawer-panel"
         style={{
           position: 'fixed',
           top: 0,
