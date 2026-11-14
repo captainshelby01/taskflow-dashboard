@@ -5,6 +5,8 @@ interface AuthenticatedSocket extends Socket {
   userId?: string;
 }
 
+const JWT_SECRET = process.env.JWT_SECRET || 'taskflow_jwt_secret_dev_key_2026';
+
 export const initCardSocket = (io: Server) => {
   io.use((socket: AuthenticatedSocket, next) => {
     const token = socket.handshake.auth?.token;
@@ -14,7 +16,7 @@ export const initCardSocket = (io: Server) => {
     }
 
     try {
-      const decoded = jwt.verify(token, process.env.JWT_SECRET as string) as { userId: string };
+      const decoded = jwt.verify(token, JWT_SECRET) as { userId: string };
       socket.userId = decoded.userId;
       next();
     } catch (error) {

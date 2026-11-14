@@ -3,6 +3,8 @@ import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import prisma from '../lib/prisma';
 
+const JWT_SECRET = process.env.JWT_SECRET || 'taskflow_jwt_secret_dev_key_2026';
+
 export const signup = async (req: Request, res: Response) => {
   try {
     const { email, password } = req.body;
@@ -60,7 +62,7 @@ export const login = async (req: Request, res: Response) => {
 
     const token = jwt.sign(
       { userId: user.id },
-      process.env.JWT_SECRET as string,
+      JWT_SECRET,
       { expiresIn: '7d' }
     );
 
