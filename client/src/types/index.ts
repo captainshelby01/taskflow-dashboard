@@ -6,6 +6,19 @@ export interface User {
   createdAt: string;
 }
 
+export interface DecisionRecord {
+  title: string;
+  rationale: string;
+  decidedBy: string;
+  date: string;
+}
+
+export interface AssigneeRecord {
+  name: string;
+  initials: string;
+  avatarColor?: string;
+}
+
 export interface Card {
   id: string;
   title: string;
@@ -17,6 +30,11 @@ export interface Card {
   createdAt: string;
   updatedAt: string;
   userId: string;
+  assignee?: AssigneeRecord;
+  isBlocker?: boolean;
+  blockedBy?: string;
+  blocks?: string;
+  decision?: DecisionRecord;
 }
 
 export interface AuthResponse {
@@ -26,3 +44,4 @@ export interface AuthResponse {
     email: string;
   };
 }
+

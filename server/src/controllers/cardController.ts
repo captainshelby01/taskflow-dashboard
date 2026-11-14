@@ -19,7 +19,7 @@ export const getCards = async (req: AuthRequest, res: Response) => {
 
 export const createCard = async (req: AuthRequest, res: Response) => {
   try {
-    const { title, description, status, position, priority, dueDate } = req.body;
+    const { title, description, status, position, priority, dueDate, assignee, isBlocker, blockedBy, blocks, decision } = req.body;
 
     if (!title) {
       return res.status(400).json({ error: 'Title is required' });
@@ -34,6 +34,11 @@ export const createCard = async (req: AuthRequest, res: Response) => {
         dueDate: dueDate || null,
         position: position ?? 0,
         userId: req.userId as string,
+        ...(assignee && { assignee }),
+        ...(isBlocker !== undefined && { isBlocker }),
+        ...(blockedBy && { blockedBy }),
+        ...(blocks && { blocks }),
+        ...(decision && { decision }),
       },
     });
 
@@ -49,7 +54,7 @@ export const createCard = async (req: AuthRequest, res: Response) => {
 export const updateCard = async (req: AuthRequest, res: Response) => {
   try {
     const { id } = req.params as { id: string };
-    const { title, description, status, position, priority, dueDate } = req.body;
+    const { title, description, status, position, priority, dueDate, assignee, isBlocker, blockedBy, blocks, decision } = req.body;
 
     const existingCard = await prisma.card.findUnique({ where: { id } });
 
@@ -61,7 +66,17 @@ export const updateCard = async (req: AuthRequest, res: Response) => {
       return res.status(403).json({ error: 'You do not have permission to edit this card' });
     }
 
-    const isMove = (status !== undefined || position !== undefined) && title === undefined && description === undefined && priority === undefined && dueDate === undefined;
+    const isMove =
+      (status !== undefined || position !== undefined) &&
+      title === undefined &&
+      description === undefined &&
+      priority === undefined &&
+      dueDate === undefined &&
+      assignee === undefined &&
+      isBlocker === undefined &&
+      blockedBy === undefined &&
+      blocks === undefined &&
+      decision === undefined;
 
     const updatedCard = await prisma.card.update({
       where: { id },
@@ -72,6 +87,11 @@ export const updateCard = async (req: AuthRequest, res: Response) => {
         ...(priority !== undefined && { priority }),
         ...(dueDate !== undefined && { dueDate }),
         ...(position !== undefined && { position }),
+        ...(assignee !== undefined && { assignee }),
+        ...(isBlocker !== undefined && { isBlocker }),
+        ...(blockedBy !== undefined && { blockedBy }),
+        ...(blocks !== undefined && { blocks }),
+        ...(decision !== undefined && { decision }),
       },
     });
 

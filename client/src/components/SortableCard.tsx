@@ -49,13 +49,19 @@ export function CardView({
       })
     : null;
 
+  const isOverdue =
+    card.status !== 'done' &&
+    card.dueDate &&
+    new Date(card.dueDate + 'T23:59:59').getTime() < new Date('2026-11-14T12:00:00').getTime();
+
+  const hasExceptionBorder = card.isBlocker || card.blockedBy;
+  const exceptionBorderColor = card.isBlocker ? '#ef4444' : '#f59e0b';
+
   const baseStyle: React.CSSProperties = {
     background: 'var(--surface)',
     borderRadius: 'var(--radius-md)',
-    borderTop: isDragging ? '1.5px dashed var(--border)' : '1px solid var(--border)',
-    borderRight: isDragging ? '1.5px dashed var(--border)' : '1px solid var(--border)',
-    borderBottom: isDragging ? '1.5px dashed var(--border)' : '1px solid var(--border)',
-    borderLeft: `3.5px solid ${STATUS_COLOR[card.status]}`,
+    border: isDragging ? '1.5px dashed var(--border)' : '1px solid var(--border)',
+    borderLeft: hasExceptionBorder ? `3.5px solid ${exceptionBorderColor}` : undefined,
     padding: '0.85rem 1rem',
     marginBottom: '0.65rem',
     boxShadow: isOverlay
@@ -120,6 +126,75 @@ export function CardView({
         </span>
       </div>
 
+      {/* Release Exception Badges (Blocker, Blocked, Decision) */}
+      {card.isBlocker && (
+        <div style={{ marginBottom: '0.45rem' }}>
+          <span
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '0.3rem',
+              fontSize: '0.68rem',
+              fontFamily: 'var(--font-mono)',
+              fontWeight: 700,
+              color: '#ef4444',
+              background: 'rgba(239, 68, 68, 0.1)',
+              border: '1px solid rgba(239, 68, 68, 0.25)',
+              padding: '0.12rem 0.45rem',
+              borderRadius: '4px',
+            }}
+            title={`Blocks: ${card.blocks || 'release'}`}
+          >
+            <span>●</span> RELEASE BLOCKER
+          </span>
+        </div>
+      )}
+
+      {card.blockedBy && (
+        <div style={{ marginBottom: '0.45rem' }}>
+          <span
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '0.3rem',
+              fontSize: '0.68rem',
+              fontFamily: 'var(--font-mono)',
+              fontWeight: 600,
+              color: '#f59e0b',
+              background: 'rgba(245, 158, 11, 0.1)',
+              border: '1px solid rgba(245, 158, 11, 0.25)',
+              padding: '0.12rem 0.45rem',
+              borderRadius: '4px',
+            }}
+            title={`Blocked by: ${card.blockedBy}`}
+          >
+            <span>⚠</span> BLOCKED
+          </span>
+        </div>
+      )}
+
+      {card.decision && (
+        <div style={{ marginBottom: '0.45rem' }}>
+          <span
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '0.3rem',
+              fontSize: '0.68rem',
+              fontWeight: 600,
+              color: 'var(--moss)',
+              background: 'var(--moss-soft)',
+              border: '1px solid rgba(45, 90, 63, 0.2)',
+              padding: '0.12rem 0.45rem',
+              borderRadius: '4px',
+            }}
+            title={card.decision.title}
+          >
+            <span>✦</span> DECISION ATTACHED
+          </span>
+        </div>
+      )}
+
       {/* Card Title */}
       <div
         style={{
@@ -127,25 +202,26 @@ export function CardView({
           fontWeight: 500,
           lineHeight: 1.45,
           color: 'var(--ink)',
-          marginBottom: formattedDueDate || card.description ? '0.6rem' : '0',
+          marginBottom: '0.6rem',
         }}
       >
         {card.title}
       </div>
 
-      {/* Bottom Metadata Indicators: Due Date & Notes Flag */}
-      {(formattedDueDate || card.description) && (
-        <div
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: '0.75rem',
-            fontSize: '0.74rem',
-            color: 'var(--ink-soft)',
-            paddingTop: '0.35rem',
-            borderTop: '1px solid rgba(227, 224, 216, 0.4)',
-          }}
-        >
+      {/* Bottom Metadata Indicators: Due Date, Notes Flag, and Assignee Avatar */}
+      <div
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          gap: '0.5rem',
+          fontSize: '0.74rem',
+          color: 'var(--ink-soft)',
+          paddingTop: '0.45rem',
+          borderTop: '1px solid rgba(227, 224, 216, 0.4)',
+        }}
+      >
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem' }}>
           {formattedDueDate && (
             <span
               style={{
@@ -153,9 +229,12 @@ export function CardView({
                 alignItems: 'center',
                 gap: '0.3rem',
                 fontFamily: 'var(--font-mono)',
+                color: isOverdue ? '#ef4444' : 'var(--ink-soft)',
+                fontWeight: isOverdue ? 600 : 400,
               }}
+              title={isOverdue ? 'Overdue task' : 'Target due date'}
             >
-              <span>🗓</span> {formattedDueDate}
+              <span>{isOverdue ? '⚠️' : '🗓'}</span> {formattedDueDate}
             </span>
           )}
 
@@ -173,7 +252,30 @@ export function CardView({
             </span>
           )}
         </div>
-      )}
+
+        {card.assignee && (
+          <div
+            title={`Assigned to ${card.assignee.name}`}
+            style={{
+              width: '22px',
+              height: '22px',
+              borderRadius: '50%',
+              background: card.assignee.avatarColor || 'var(--clay)',
+              color: '#ffffff',
+              fontSize: '0.64rem',
+              fontWeight: 700,
+              display: 'inline-flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              letterSpacing: '-0.02em',
+              boxShadow: '0 1px 2px rgba(0,0,0,0.15)',
+              flexShrink: 0,
+            }}
+          >
+            {card.assignee.initials}
+          </div>
+        )}
+      </div>
     </div>
   );
 }

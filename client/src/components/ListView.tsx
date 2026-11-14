@@ -61,20 +61,21 @@ export default function ListView({ cards, onSelectCard, onUpdateCard, onAddCard 
         borderRadius: 'var(--radius-lg)',
         border: '1px solid var(--border)',
         boxShadow: 'var(--shadow-sm)',
-        overflow: 'hidden',
+        overflowX: 'auto',
       }}
     >
-      {/* Table Header Bar */}
+      <div style={{ minWidth: '850px' }}>
+        {/* Table Header Bar */}
       <div
         style={{
           display: 'grid',
-          gridTemplateColumns: '70px 140px 1fr 110px 110px 70px',
+          gridTemplateColumns: '60px 125px 1fr 95px 105px 50px 60px',
           alignItems: 'center',
-          gap: '1rem',
+          gap: '0.85rem',
           padding: '0.75rem 1.25rem',
           background: 'var(--paper)',
           borderBottom: '1px solid var(--border)',
-          fontSize: '0.74rem',
+          fontSize: '0.72rem',
           fontWeight: 600,
           color: 'var(--ink-soft)',
           textTransform: 'uppercase',
@@ -86,6 +87,7 @@ export default function ListView({ cards, onSelectCard, onUpdateCard, onAddCard 
         <span>Title</span>
         <span>Priority</span>
         <span>Due Date</span>
+        <span style={{ textAlign: 'center' }}>Owner</span>
         <span style={{ textAlign: 'right' }}>Inspect</span>
       </div>
 
@@ -181,9 +183,9 @@ export default function ListView({ cards, onSelectCard, onUpdateCard, onAddCard 
                   }}
                   style={{
                     display: 'grid',
-                    gridTemplateColumns: '70px 140px 1fr 110px 110px 70px',
+                    gridTemplateColumns: '60px 125px 1fr 95px 105px 50px 60px',
                     alignItems: 'center',
-                    gap: '1rem',
+                    gap: '0.85rem',
                     padding: '0.65rem 1.25rem',
                     borderBottom: '1px solid rgba(227, 224, 216, 0.4)',
                     cursor: 'pointer',
@@ -234,8 +236,58 @@ export default function ListView({ cards, onSelectCard, onUpdateCard, onAddCard 
                     <span>{STATUS_METADATA[card.status].label}</span>
                   </button>
 
-                  {/* Title & Notes Indicator */}
+                  {/* Title & Badges */}
                   <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', overflow: 'hidden' }}>
+                    {card.isBlocker && (
+                      <span
+                        style={{
+                          fontSize: '0.66rem',
+                          fontFamily: 'var(--font-mono)',
+                          fontWeight: 700,
+                          color: '#ef4444',
+                          background: 'rgba(239, 68, 68, 0.1)',
+                          border: '1px solid rgba(239, 68, 68, 0.25)',
+                          padding: '0.08rem 0.35rem',
+                          borderRadius: '3px',
+                          flexShrink: 0,
+                        }}
+                      >
+                        ● Blocker
+                      </span>
+                    )}
+                    {card.blockedBy && (
+                      <span
+                        style={{
+                          fontSize: '0.66rem',
+                          fontFamily: 'var(--font-mono)',
+                          fontWeight: 600,
+                          color: '#f59e0b',
+                          background: 'rgba(245, 158, 11, 0.1)',
+                          border: '1px solid rgba(245, 158, 11, 0.25)',
+                          padding: '0.08rem 0.35rem',
+                          borderRadius: '3px',
+                          flexShrink: 0,
+                        }}
+                      >
+                        ⚠ Blocked
+                      </span>
+                    )}
+                    {card.decision && (
+                      <span
+                        style={{
+                          fontSize: '0.66rem',
+                          fontWeight: 600,
+                          color: 'var(--moss)',
+                          background: 'var(--moss-soft)',
+                          border: '1px solid rgba(45, 90, 63, 0.2)',
+                          padding: '0.08rem 0.35rem',
+                          borderRadius: '3px',
+                          flexShrink: 0,
+                        }}
+                      >
+                        ✦ Decision
+                      </span>
+                    )}
                     <span
                       style={{
                         fontSize: '0.88rem',
@@ -292,6 +344,32 @@ export default function ListView({ cards, onSelectCard, onUpdateCard, onAddCard 
                     {formattedDueDate !== '—' && <span style={{ marginRight: '0.2rem' }}>🗓</span>}
                     {formattedDueDate}
                   </span>
+
+                  {/* Assignee Avatar */}
+                  <div style={{ display: 'flex', justifyContent: 'center' }}>
+                    {card.assignee ? (
+                      <div
+                        title={`Assigned to ${card.assignee.name}`}
+                        style={{
+                          width: '22px',
+                          height: '22px',
+                          borderRadius: '50%',
+                          background: card.assignee.avatarColor || 'var(--clay)',
+                          color: '#ffffff',
+                          fontSize: '0.62rem',
+                          fontWeight: 700,
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          letterSpacing: '-0.02em',
+                        }}
+                      >
+                        {card.assignee.initials}
+                      </div>
+                    ) : (
+                      <span style={{ color: 'var(--ink-soft)', opacity: 0.3, fontSize: '0.75rem' }}>—</span>
+                    )}
+                  </div>
 
                   {/* Drawer Open Trigger */}
                   <span
@@ -397,6 +475,7 @@ export default function ListView({ cards, onSelectCard, onUpdateCard, onAddCard 
           </div>
         );
       })}
+      </div>
     </div>
   );
 }

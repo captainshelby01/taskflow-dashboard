@@ -32,7 +32,7 @@ export default function CardDrawer({ card, isOpen, onClose, onUpdate, onDelete }
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
 
-  const titleInputRef = useRef<HTMLInputElement>(null);
+  const titleInputRef = useRef<HTMLTextAreaElement>(null);
 
   useEffect(() => {
     if (card) {
@@ -225,7 +225,7 @@ export default function CardDrawer({ card, isOpen, onClose, onUpdate, onDelete }
             gap: '1.5rem',
           }}
         >
-          {/* Inline Title Input */}
+          {/* Inline Title Input (Multi-line auto-wrap) */}
           <div>
             <label
               style={{
@@ -240,9 +240,9 @@ export default function CardDrawer({ card, isOpen, onClose, onUpdate, onDelete }
             >
               Title
             </label>
-            <input
+            <textarea
               ref={titleInputRef}
-              type="text"
+              rows={2}
               value={title}
               onChange={(e) => setTitle(e.target.value)}
               placeholder="Task title..."
@@ -255,9 +255,12 @@ export default function CardDrawer({ card, isOpen, onClose, onUpdate, onDelete }
                 background: 'transparent',
                 border: '1px solid transparent',
                 borderRadius: 'var(--radius-sm)',
-                padding: '0.5rem 0.2rem',
+                padding: '0.4rem 0.2rem',
                 outline: 'none',
+                resize: 'none',
+                lineHeight: 1.35,
                 transition: 'border 0.15s ease',
+                boxSizing: 'border-box',
               }}
               onFocus={(e) => (e.target.style.borderColor = 'var(--border)')}
               onBlur={(e) => (e.target.style.borderColor = 'transparent')}
@@ -416,7 +419,155 @@ export default function CardDrawer({ card, isOpen, onClose, onUpdate, onDelete }
                 })}
               </div>
             </div>
+
+            {/* Assignee Information */}
+            {card.assignee && (
+              <div
+                style={{
+                  gridColumn: 'span 2',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '0.75rem',
+                  paddingTop: '0.75rem',
+                  borderTop: '1px solid var(--border)',
+                }}
+              >
+                <span
+                  style={{
+                    fontSize: '0.72rem',
+                    fontWeight: 600,
+                    textTransform: 'uppercase',
+                    letterSpacing: '0.04em',
+                    color: 'var(--ink-soft)',
+                  }}
+                >
+                  Assigned to:
+                </span>
+                <div style={{ display: 'inline-flex', alignItems: 'center', gap: '0.45rem' }}>
+                  <div
+                    style={{
+                      width: '24px',
+                      height: '24px',
+                      borderRadius: '50%',
+                      background: card.assignee.avatarColor || 'var(--clay)',
+                      color: '#ffffff',
+                      fontSize: '0.68rem',
+                      fontWeight: 700,
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                    }}
+                  >
+                    {card.assignee.initials}
+                  </div>
+                  <span style={{ fontSize: '0.84rem', fontWeight: 600, color: 'var(--ink)' }}>
+                    {card.assignee.name}
+                  </span>
+                </div>
+              </div>
+            )}
           </div>
+
+          {/* Dependency & Blocker Trace Section */}
+          {(card.isBlocker || card.blockedBy || card.blocks) && (
+            <div
+              style={{
+                background: card.isBlocker ? 'rgba(239, 68, 68, 0.05)' : 'rgba(245, 158, 11, 0.05)',
+                border: `1px solid ${card.isBlocker ? 'rgba(239, 68, 68, 0.25)' : 'rgba(245, 158, 11, 0.25)'}`,
+                borderRadius: 'var(--radius-md)',
+                padding: '1rem 1.15rem',
+              }}
+            >
+              <div
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '0.45rem',
+                  fontSize: '0.74rem',
+                  fontWeight: 700,
+                  fontFamily: 'var(--font-mono)',
+                  color: card.isBlocker ? '#ef4444' : '#f59e0b',
+                  marginBottom: '0.45rem',
+                  textTransform: 'uppercase',
+                  letterSpacing: '0.04em',
+                }}
+              >
+                <span>{card.isBlocker ? '🔴 Release Blocker Chain' : '⚠️ Blocked Dependency'}</span>
+              </div>
+
+              {card.isBlocker && (
+                <div style={{ fontSize: '0.84rem', color: 'var(--ink)', lineHeight: 1.45 }}>
+                  <p style={{ margin: '0 0 0.35rem 0', fontWeight: 600 }}>
+                    Actively blocking: <span style={{ color: '#ef4444' }}>{card.blocks || 'downstream delivery'}</span>
+                  </p>
+                  <p style={{ margin: 0, fontSize: '0.78rem', color: 'var(--ink-soft)' }}>
+                    Payment integration tests cannot execute until OAuth credentials and production sandbox webhooks are cleared.
+                  </p>
+                </div>
+              )}
+
+              {card.blockedBy && (
+                <div style={{ fontSize: '0.84rem', color: 'var(--ink)', lineHeight: 1.45 }}>
+                  <p style={{ margin: '0 0 0.35rem 0', fontWeight: 600 }}>
+                    Blocked by: <span style={{ color: '#ef4444' }}>{card.blockedBy}</span>
+                  </p>
+                  <p style={{ margin: 0, fontSize: '0.78rem', color: 'var(--ink-soft)' }}>
+                    Execution is paused waiting for upstream bank credentials and sandbox webhook activation.
+                  </p>
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* Decision Trail Section */}
+          {card.decision && (
+            <div
+              style={{
+                background: 'var(--paper)',
+                border: '1px solid var(--border)',
+                borderLeft: '3.5px solid var(--moss)',
+                borderRadius: 'var(--radius-md)',
+                padding: '1rem 1.15rem',
+              }}
+            >
+              <div
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                  marginBottom: '0.45rem',
+                }}
+              >
+                <span
+                  style={{
+                    fontSize: '0.72rem',
+                    fontWeight: 700,
+                    textTransform: 'uppercase',
+                    letterSpacing: '0.05em',
+                    color: 'var(--moss)',
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '0.35rem',
+                  }}
+                >
+                  <span>✦</span> Decision Trail
+                </span>
+                <span style={{ fontSize: '0.72rem', color: 'var(--ink-soft)', fontFamily: 'var(--font-mono)' }}>
+                  {card.decision.date}
+                </span>
+              </div>
+
+              <h4 style={{ fontSize: '0.92rem', fontWeight: 600, color: 'var(--ink)', margin: '0 0 0.35rem 0' }}>
+                {card.decision.title}
+              </h4>
+              <p style={{ fontSize: '0.82rem', color: 'var(--ink-soft)', lineHeight: 1.5, margin: '0 0 0.45rem 0' }}>
+                {card.decision.rationale}
+              </p>
+              <div style={{ fontSize: '0.72rem', color: 'var(--ink-soft)' }}>
+                Decided by: <strong style={{ color: 'var(--ink)' }}>{card.decision.decidedBy}</strong>
+              </div>
+            </div>
+          )}
 
           {/* Description Section */}
           <div style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>

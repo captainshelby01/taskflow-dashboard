@@ -9,100 +9,149 @@
   ],
   "cards": [
     {
-      "id": "card-1",
-      "title": "Audit WebSocket latency (<50ms for US & EU clients)",
-      "description": "Benchmark round-trip ping times under concurrent drag-and-drop operations across distributed regions.\n\n### Objectives:\n- Measure latency under high concurrency\n- Optimize socket payload serialization\n- Test failover reconnects",
-      "status": "done",
+      "id": "card-api-approval",
+      "title": "Bank API Gateway Approval & Production Sandbox Keys",
+      "description": "Awaiting production OAuth credentials and sandbox webhook activation from partner bank. Required before end-to-end payment testing can proceed.\n\n### Blocker Impact:\n- **Blocks**: End-to-End Payment Testing with 3D Secure\n- **Owner**: Sarah K. (Backend Lead)\n- **Status**: Escalated with bank account rep on Nov 12. Follow-up meeting scheduled 3:00 PM.",
+      "status": "in_progress",
       "priority": "urgent",
-      "dueDate": "2026-11-16",
-      "position": 1.375,
-      "createdAt": "2026-11-10T10:00:00.000Z",
-      "updatedAt": "2026-11-14T11:33:10.100Z",
-      "userId": "demo-user-taskflow-uuid"
+      "dueDate": "2026-11-13",
+      "position": 1,
+      "createdAt": "2026-11-08T10:00:00.000Z",
+      "updatedAt": "2026-11-13T16:00:00.000Z",
+      "userId": "demo-user-taskflow-uuid",
+      "assignee": {
+        "name": "Sarah K.",
+        "initials": "SK",
+        "avatarColor": "#6366f1"
+      },
+      "isBlocker": true,
+      "blocks": "End-to-End Payment Testing with 3D Secure"
     },
     {
-      "id": "card-2",
-      "title": "Design fluid gesture physics for iOS & mobile web",
-      "description": "Implement rubber-banding and micro-haptic feedback visual cues when cards cross column drop boundaries.",
-      "status": "done",
+      "id": "card-payment-testing",
+      "title": "End-to-End Payment Testing with 3D Secure Matrix",
+      "description": "Run full validation matrix of Visa Secure, Mastercard Identity Check, and AmEx SafeKey flows across mobile Safari, Android Chrome, and desktop browsers.\n\n### Dependency:\n- **Blocked by**: Bank API Gateway Approval & Production Sandbox Keys\n- **Target completion**: 24h after credentials cleared.",
+      "status": "todo",
       "priority": "high",
       "dueDate": "2026-11-18",
-      "position": 1.5,
-      "createdAt": "2026-11-10T11:00:00.000Z",
-      "updatedAt": "2026-11-13T16:59:25.938Z",
-      "userId": "demo-user-taskflow-uuid"
+      "position": 1,
+      "createdAt": "2026-11-09T11:00:00.000Z",
+      "updatedAt": "2026-11-12T14:30:00.000Z",
+      "userId": "demo-user-taskflow-uuid",
+      "assignee": {
+        "name": "Alex M.",
+        "initials": "AM",
+        "avatarColor": "#0ea5e9"
+      },
+      "blockedBy": "Bank API Gateway Approval"
     },
     {
-      "id": "card-3",
-      "title": "Implement keyboard navigation shortcuts (N: new, /: search)",
-      "description": "Empower power users to rapidly create and filter cards without leaving the keyboard.",
+      "id": "card-guest-checkout",
+      "title": "Guest Checkout Flow & Address Autocomplete",
+      "description": "Allow first-time buyers to complete purchase without mandatory registration. Integrates Google Places autocomplete to minimize mobile address typos.\n\n### Key Metrics:\n- Reduces checkout friction from 4 screens to 2\n- Expected conversion lift: +12%",
+      "status": "in_progress",
+      "priority": "high",
+      "dueDate": "2026-11-19",
+      "position": 2,
+      "createdAt": "2026-11-09T14:00:00.000Z",
+      "updatedAt": "2026-11-13T11:20:00.000Z",
+      "userId": "demo-user-taskflow-uuid",
+      "assignee": {
+        "name": "Elena R.",
+        "initials": "ER",
+        "avatarColor": "#10b981"
+      },
+      "decision": {
+        "title": "Keep Guest Checkout in v2.4 Release Scope",
+        "rationale": "Telemetry revealed an 18% cart abandonment rate at the mandatory registration wall. Postponing guest checkout would severely risk initial launch GMV.",
+        "decidedBy": "Elena R. & Product Review",
+        "date": "Nov 11, 2026"
+      }
+    },
+    {
+      "id": "card-mobile-dropoff",
+      "title": "Mobile Checkout Funnel Telemetry & Viewport Polish",
+      "description": "Audit sticky payment CTA button behavior on compact 375px viewports (iPhone SE / mini). Ensure virtual keyboard appearance does not obscure total summary.",
       "status": "todo",
       "priority": "medium",
+      "dueDate": "2026-11-20",
+      "position": 2,
+      "createdAt": "2026-11-10T09:00:00.000Z",
+      "updatedAt": "2026-11-10T09:00:00.000Z",
+      "userId": "demo-user-taskflow-uuid",
+      "assignee": {
+        "name": "David L.",
+        "initials": "DL",
+        "avatarColor": "#f59e0b"
+      }
+    },
+    {
+      "id": "card-deployment-runbook",
+      "title": "Production Zero-Downtime Deployment Runbook",
+      "description": "Finalize step-by-step rollout protocol, database migration safety scripts, and instant feature flag rollback criteria for Friday release.",
+      "status": "todo",
+      "priority": "low",
       "dueDate": "2026-11-20",
       "position": 3,
       "createdAt": "2026-11-10T12:00:00.000Z",
       "updatedAt": "2026-11-10T12:00:00.000Z",
-      "userId": "demo-user-taskflow-uuid"
+      "userId": "demo-user-taskflow-uuid",
+      "assignee": {
+        "name": "David L.",
+        "initials": "DL",
+        "avatarColor": "#f59e0b"
+      }
     },
     {
-      "id": "card-4",
-      "title": "Refactor @dnd-kit sensors with distance activation constraint",
-      "description": "Prevent accidental drag triggers on mobile taps by requiring a 5px minimum movement delta before engaging.",
+      "id": "card-stripe-elements",
+      "title": "Stripe Elements Migration & Apple Pay Integration",
+      "description": "Migrated legacy form inputs to unified payment element with native Apple Pay and Google Pay one-click tokenization.",
       "status": "done",
       "priority": "high",
-      "dueDate": "2026-11-15",
-      "position": 1.4375,
-      "createdAt": "2026-11-09T14:00:00.000Z",
-      "updatedAt": "2026-11-14T12:07:31.373Z",
-      "userId": "demo-user-taskflow-uuid"
-    },
-    {
-      "id": "card-5",
-      "title": "Add fractional positioning algorithm for smooth re-ordering",
-      "description": "Compute (before + after) / 2 position values to allow O(1) card moves without batch re-indexing.",
-      "status": "todo",
-      "priority": "medium",
-      "dueDate": "2026-11-17",
-      "position": 3.25,
-      "createdAt": "2026-11-09T15:00:00.000Z",
-      "updatedAt": "2026-11-14T12:07:29.507Z",
-      "userId": "demo-user-taskflow-uuid"
-    },
-    {
-      "id": "card-6",
-      "title": "Ship Fraunces & Inter warm editorial typography system",
-      "description": "Replace generic sans-serif fonts with modern editorial styling and earth-toned status indicator badges with what you have",
-      "status": "todo",
-      "priority": "low",
       "dueDate": "2026-11-12",
-      "position": 3.5,
-      "createdAt": "2026-11-08T08:00:00.000Z",
-      "updatedAt": "2026-11-14T11:33:06.067Z",
-      "userId": "demo-user-taskflow-uuid"
+      "position": 1,
+      "createdAt": "2026-11-06T08:00:00.000Z",
+      "updatedAt": "2026-11-12T16:30:00.000Z",
+      "userId": "demo-user-taskflow-uuid",
+      "assignee": {
+        "name": "Alex M.",
+        "initials": "AM",
+        "avatarColor": "#0ea5e9"
+      }
     },
     {
-      "id": "card-7",
-      "title": "Configure JWT authentication handshake on Socket.io connection",
-      "description": "Secure real-time WebSocket communication channels with user-scoped socket rooms.",
-      "status": "in_progress",
+      "id": "card-cart-drawer",
+      "title": "Responsive Cart Drawer & Tax Estimation Layout",
+      "description": "Designed sliding slide-over cart drawer with instant promo code validation, shipping rate calculation, and cart item quantity steppers.",
+      "status": "done",
       "priority": "medium",
-      "dueDate": "2026-11-13",
-      "position": 5.5,
-      "createdAt": "2026-11-08T09:00:00.000Z",
-      "updatedAt": "2026-11-13T16:59:31.072Z",
-      "userId": "demo-user-taskflow-uuid"
+      "dueDate": "2026-11-11",
+      "position": 2,
+      "createdAt": "2026-11-06T10:00:00.000Z",
+      "updatedAt": "2026-11-11T14:15:00.000Z",
+      "userId": "demo-user-taskflow-uuid",
+      "assignee": {
+        "name": "Elena R.",
+        "initials": "ER",
+        "avatarColor": "#10b981"
+      }
     },
     {
-      "id": "9f31207a-db1c-46fd-a7b8-3e90e34d91d8",
-      "title": "Calibrate Web Audio click oscillators for drag release",
-      "description": null,
-      "status": "in_progress",
-      "priority": "medium",
-      "dueDate": null,
-      "position": 6.5,
-      "createdAt": "2026-11-13T16:56:43.828Z",
-      "updatedAt": "2026-11-14T12:27:38.581Z",
-      "userId": "demo-user-taskflow-uuid"
+      "id": "card-refund-webhook",
+      "title": "Idempotent Refund & Dispute Webhook Handlers",
+      "description": "Engineered cryptographic signature verification and idempotent processing for charge.refunded and dispute.created webhooks.",
+      "status": "done",
+      "priority": "low",
+      "dueDate": "2026-11-10",
+      "position": 3,
+      "createdAt": "2026-11-05T11:00:00.000Z",
+      "updatedAt": "2026-11-10T17:45:00.000Z",
+      "userId": "demo-user-taskflow-uuid",
+      "assignee": {
+        "name": "Sarah K.",
+        "initials": "SK",
+        "avatarColor": "#6366f1"
+      }
     }
   ]
 }
