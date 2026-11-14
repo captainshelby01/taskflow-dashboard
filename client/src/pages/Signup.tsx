@@ -69,7 +69,7 @@ export default function Signup() {
             boxShadow: 'var(--shadow-sm)',
             transition: 'all 0.15s ease',
           }}
-          title="Toggle Obsidian Dark / Light theme"
+          title="Toggle Dark / Light theme"
           onMouseEnter={(e) => {
             e.currentTarget.style.borderColor = 'var(--moss)';
           }}
@@ -77,8 +77,8 @@ export default function Signup() {
             e.currentTarget.style.borderColor = 'var(--border)';
           }}
         >
-          <span>{theme === 'dark' ? '☀️' : '🌙'}</span>
-          <span>{theme === 'dark' ? 'Light' : 'Obsidian'}</span>
+          <i className={theme === 'dark' ? "bi bi-sun-fill" : "bi bi-moon-stars-fill"}></i>
+          <span>{theme === 'dark' ? 'Light' : 'Dark'}</span>
         </button>
       </div>
       {/* Ambient Radial Spotlight Mesh */}
@@ -145,7 +145,7 @@ export default function Signup() {
                 border: '1px solid rgba(248, 113, 113, 0.3)',
               }}
             >
-              <span>✕</span>
+              <i className="bi bi-x-circle-fill"></i>
               <span>{error}</span>
             </div>
           )}
@@ -254,10 +254,12 @@ export default function Signup() {
                     cursor: 'pointer',
                     fontSize: '0.9rem',
                     padding: '0.2rem',
+                    display: 'flex',
+                    alignItems: 'center',
                   }}
                   title={showPassword ? 'Hide password' : 'Show password'}
                 >
-                  {showPassword ? '🙈' : '👁'}
+                  <i className={showPassword ? "bi bi-eye-slash" : "bi bi-eye"}></i>
                 </button>
               </div>
             </div>
@@ -294,7 +296,7 @@ export default function Signup() {
               }}
             >
               <span>{loading ? 'Creating Account...' : 'Get Started with TaskFlow'}</span>
-              <span>↵</span>
+              <i className="bi bi-arrow-right"></i>
             </button>
           </form>
 
@@ -336,11 +338,17 @@ export default function Signup() {
             fontFamily: 'var(--font-mono)',
           }}
         >
-          <span>⚡ WebSocket Sync</span>
+          <span style={{ display: 'inline-flex', alignItems: 'center', gap: '0.35rem' }}>
+            <i className="bi bi-broadcast"></i> Instant Sync
+          </span>
           <span>·</span>
-          <span>🔒 JWT Auth</span>
+          <span style={{ display: 'inline-flex', alignItems: 'center', gap: '0.35rem' }}>
+            <i className="bi bi-shield-check"></i> Encrypted Sessions
+          </span>
           <span>·</span>
-          <span>⌘K Keyboard First</span>
+          <span style={{ display: 'inline-flex', alignItems: 'center', gap: '0.35rem' }}>
+            <i className="bi bi-command"></i> Keyboard First
+          </span>
         </div>
       </div>
     </div>

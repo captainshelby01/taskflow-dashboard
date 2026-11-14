@@ -8,11 +8,11 @@ export const STATUS_COLOR: Record<Card['status'], string> = {
   done: 'var(--moss)',
 };
 
-export const PRIORITY_BADGES: Record<Priority, { label: string; glyph: string; color: string; bg: string }> = {
-  urgent: { label: 'Urgent', glyph: '▲', color: '#e5484d', bg: 'var(--clay-soft)' },
-  high: { label: 'High', glyph: '⎎', color: 'var(--clay)', bg: 'var(--clay-soft)' },
-  medium: { label: 'Med', glyph: '⎍', color: 'var(--ochre)', bg: 'var(--ochre-soft)' },
-  low: { label: 'Low', glyph: '⎯', color: 'var(--moss)', bg: 'var(--moss-soft)' },
+export const PRIORITY_BADGES: Record<Priority, { label: string; iconClass: string; color: string; bg: string }> = {
+  urgent: { label: 'Urgent', iconClass: 'bi-arrow-up-circle-fill', color: '#e5484d', bg: 'var(--clay-soft)' },
+  high: { label: 'High', iconClass: 'bi-chevron-double-up', color: 'var(--clay)', bg: 'var(--clay-soft)' },
+  medium: { label: 'Med', iconClass: 'bi-dash-circle', color: 'var(--ochre)', bg: 'var(--ochre-soft)' },
+  low: { label: 'Low', iconClass: 'bi-arrow-down-circle', color: 'var(--moss)', bg: 'var(--moss-soft)' },
 };
 
 interface CardViewProps {
@@ -115,14 +115,17 @@ export function CardView({
             gap: '0.25rem',
             fontSize: '0.7rem',
             fontWeight: 600,
-            color: priorityInfo.color,
-            background: priorityInfo.bg,
+            color: card.status === 'done' ? 'var(--ink-soft)' : priorityInfo.color,
+            background: card.status === 'done' ? 'transparent' : priorityInfo.bg,
+            border: card.status === 'done' ? '1px solid var(--border)' : 'none',
             padding: '0.12rem 0.45rem',
             borderRadius: 'var(--radius-sm)',
             letterSpacing: '0.02em',
+            opacity: card.status === 'done' ? 0.55 : 1,
           }}
+          title={`Priority: ${priorityInfo.label}`}
         >
-          <span>{priorityInfo.glyph}</span> {priorityInfo.label}
+          <span><i className={`bi ${priorityInfo.iconClass}`} style={{ fontSize: '0.68rem' }}></i></span> {priorityInfo.label}
         </span>
       </div>
 
@@ -145,7 +148,7 @@ export function CardView({
             }}
             title={`Blocks: ${card.blocks || 'release'}`}
           >
-            <span>●</span> RELEASE BLOCKER
+            <i className="bi bi-exclamation-octagon-fill" style={{ fontSize: '0.65rem' }}></i> RELEASE BLOCKER
           </span>
         </div>
       )}
@@ -168,7 +171,7 @@ export function CardView({
             }}
             title={`Blocked by: ${card.blockedBy}`}
           >
-            <span>⚠</span> BLOCKED
+            <i className="bi bi-pause-circle-fill" style={{ fontSize: '0.65rem' }}></i> BLOCKED
           </span>
         </div>
       )}
@@ -190,7 +193,7 @@ export function CardView({
             }}
             title={card.decision.title}
           >
-            <span>✦</span> DECISION ATTACHED
+            <i className="bi bi-check2-circle" style={{ fontSize: '0.72rem' }}></i> DECISION ATTACHED
           </span>
         </div>
       )}
@@ -234,7 +237,7 @@ export function CardView({
               }}
               title={isOverdue ? 'Overdue task' : 'Target due date'}
             >
-              <span>{isOverdue ? '⚠️' : '🗓'}</span> {formattedDueDate}
+              <i className={isOverdue ? "bi bi-exclamation-circle-fill" : "bi bi-calendar3"} style={{ fontSize: '0.72rem' }}></i> {formattedDueDate}
             </span>
           )}
 
@@ -248,7 +251,7 @@ export function CardView({
               }}
               title="Contains notes / specifications"
             >
-              <span>≡</span> Notes
+              <i className="bi bi-file-text" style={{ fontSize: '0.72rem' }}></i> Notes
             </span>
           )}
         </div>

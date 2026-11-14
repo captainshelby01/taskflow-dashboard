@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import type { Card, Priority } from '../types';
+import MarkdownView from './MarkdownView';
 
 interface CardDrawerProps {
   card: Card | null;
@@ -15,11 +16,11 @@ const STATUS_OPTIONS: { key: Card['status']; label: string; glyph: string; color
   { key: 'done', label: 'Done', glyph: '●', color: 'var(--moss)' },
 ];
 
-const PRIORITY_OPTIONS: { key: Priority; label: string; glyph: string; color: string; bg: string }[] = [
-  { key: 'urgent', label: 'Urgent', glyph: '▲', color: '#e5484d', bg: 'var(--clay-soft)' },
-  { key: 'high', label: 'High', glyph: '⎎', color: 'var(--clay)', bg: 'var(--clay-soft)' },
-  { key: 'medium', label: 'Medium', glyph: '⎍', color: 'var(--ochre)', bg: 'var(--ochre-soft)' },
-  { key: 'low', label: 'Low', glyph: '⎯', color: 'var(--moss)', bg: 'var(--moss-soft)' },
+const PRIORITY_OPTIONS: { key: Priority; label: string; glyph: string; iconClass: string; color: string; bg: string }[] = [
+  { key: 'urgent', label: 'Urgent', glyph: '▲', iconClass: 'bi-arrow-up-circle-fill', color: '#e5484d', bg: 'var(--clay-soft)' },
+  { key: 'high', label: 'High', glyph: '⎎', iconClass: 'bi-chevron-double-up', color: 'var(--clay)', bg: 'var(--clay-soft)' },
+  { key: 'medium', label: 'Medium', glyph: '⎍', iconClass: 'bi-dash-circle', color: 'var(--ochre)', bg: 'var(--ochre-soft)' },
+  { key: 'low', label: 'Low', glyph: '⎯', iconClass: 'bi-arrow-down-circle', color: 'var(--moss)', bg: 'var(--moss-soft)' },
 ];
 
 export default function CardDrawer({ card, isOpen, onClose, onUpdate, onDelete }: CardDrawerProps) {
@@ -31,6 +32,7 @@ export default function CardDrawer({ card, isOpen, onClose, onUpdate, onDelete }
   const [isSaving, setIsSaving] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [isEditingDescription, setIsEditingDescription] = useState(false);
 
   const titleInputRef = useRef<HTMLTextAreaElement>(null);
 
@@ -42,6 +44,7 @@ export default function CardDrawer({ card, isOpen, onClose, onUpdate, onDelete }
       setPriority(card.priority || 'medium');
       setDueDate(card.dueDate || '');
       setConfirmDelete(false);
+      setIsEditingDescription(false);
     }
   }, [card]);
 
@@ -176,7 +179,7 @@ export default function CardDrawer({ card, isOpen, onClose, onUpdate, onDelete }
                 borderRadius: 'var(--radius-sm)',
               }}
             >
-              <span>{currentPriority.glyph}</span> {currentPriority.label}
+              <i className={`bi ${currentPriority.iconClass}`} style={{ fontSize: '0.74rem' }}></i> {currentPriority.label}
             </span>
           </div>
 
@@ -197,6 +200,7 @@ export default function CardDrawer({ card, isOpen, onClose, onUpdate, onDelete }
               }}
               title="Close (Esc)"
             >
+              <i className="bi bi-x-lg" style={{ fontSize: '0.72rem' }}></i>
               <span>Close</span>
               <kbd
                 style={{
@@ -492,7 +496,17 @@ export default function CardDrawer({ card, isOpen, onClose, onUpdate, onDelete }
                   letterSpacing: '0.04em',
                 }}
               >
-                <span>{card.isBlocker ? '🔴 Release Blocker Chain' : '⚠️ Blocked Dependency'}</span>
+                {card.isBlocker ? (
+                  <>
+                    <i className="bi bi-exclamation-octagon-fill"></i>
+                    <span>Release Blocker Chain</span>
+                  </>
+                ) : (
+                  <>
+                    <i className="bi bi-pause-circle-fill"></i>
+                    <span>Blocked Dependency</span>
+                  </>
+                )}
               </div>
 
               {card.isBlocker && (
@@ -550,7 +564,7 @@ export default function CardDrawer({ card, isOpen, onClose, onUpdate, onDelete }
                     gap: '0.35rem',
                   }}
                 >
-                  <span>✦</span> Decision Trail
+                  <i className="bi bi-check2-circle"></i> Decision Trail
                 </span>
                 <span style={{ fontSize: '0.72rem', color: 'var(--ink-soft)', fontFamily: 'var(--font-mono)' }}>
                   {card.decision.date}
@@ -569,7 +583,7 @@ export default function CardDrawer({ card, isOpen, onClose, onUpdate, onDelete }
             </div>
           )}
 
-          {/* Description Section */}
+          {/* Description Section with Markdown Read / Edit Mode */}
           <div style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
             <div
               style={{
@@ -590,30 +604,81 @@ export default function CardDrawer({ card, isOpen, onClose, onUpdate, onDelete }
               >
                 Description &amp; Specifications
               </label>
-              <span style={{ fontSize: '0.75rem', color: 'var(--ink-soft)', opacity: 0.6 }}>
-                Markdown supported
-              </span>
+              <button
+                type="button"
+                onClick={() => setIsEditingDescription(!isEditingDescription)}
+                style={{
+                  fontSize: '0.72rem',
+                  fontFamily: 'var(--font-mono)',
+                  color: 'var(--moss)',
+                  background: 'transparent',
+                  border: 'none',
+                  cursor: 'pointer',
+                  fontWeight: 600,
+                  padding: '0.1rem 0.35rem',
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '0.3rem',
+                }}
+              >
+                {isEditingDescription ? (
+                  <>
+                    <i className="bi bi-eye"></i>
+                    <span>Preview Formatted</span>
+                  </>
+                ) : (
+                  <>
+                    <i className="bi bi-pencil-square"></i>
+                    <span>Edit Notes</span>
+                  </>
+                )}
+              </button>
             </div>
-            <textarea
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
-              placeholder="Add technical context, criteria, or subtasks..."
-              rows={8}
-              style={{
-                width: '100%',
-                padding: '0.85rem 1rem',
-                fontSize: '0.9rem',
-                lineHeight: 1.6,
-                color: 'var(--ink)',
-                background: 'var(--surface)',
-                border: '1px solid var(--border)',
-                borderRadius: 'var(--radius-md)',
-                outline: 'none',
-                resize: 'vertical',
-                fontFamily: 'var(--font-body)',
-                minHeight: '160px',
-              }}
-            />
+
+            {isEditingDescription ? (
+              <textarea
+                value={description}
+                onChange={(e) => setDescription(e.target.value)}
+                placeholder="Add technical context, criteria, or subtasks..."
+                rows={8}
+                style={{
+                  width: '100%',
+                  padding: '0.85rem 1rem',
+                  fontSize: '0.88rem',
+                  lineHeight: 1.6,
+                  color: 'var(--ink)',
+                  background: 'var(--surface)',
+                  border: '1px solid var(--border)',
+                  borderRadius: 'var(--radius-md)',
+                  outline: 'none',
+                  resize: 'vertical',
+                  fontFamily: 'var(--font-body)',
+                  minHeight: '140px',
+                  boxSizing: 'border-box',
+                }}
+              />
+            ) : (
+              <div
+                onClick={() => setIsEditingDescription(true)}
+                style={{
+                  background: 'var(--paper)',
+                  border: '1px solid var(--border)',
+                  borderRadius: 'var(--radius-md)',
+                  padding: '0.85rem 1.15rem',
+                  minHeight: '100px',
+                  cursor: 'pointer',
+                }}
+                title="Click to edit notes"
+              >
+                {description ? (
+                  <MarkdownView content={description} />
+                ) : (
+                  <span style={{ fontSize: '0.82rem', color: 'var(--ink-soft)', fontStyle: 'italic' }}>
+                    No notes provided. Click to add context...
+                  </span>
+                )}
+              </div>
+            )}
           </div>
         </div>
 
@@ -648,7 +713,7 @@ export default function CardDrawer({ card, isOpen, onClose, onUpdate, onDelete }
                   gap: '0.35rem',
                 }}
               >
-                <span>✕</span> Delete Task
+                <i className="bi bi-trash3"></i> Delete Task
               </button>
             ) : (
               <div style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem' }}>
@@ -727,7 +792,14 @@ export default function CardDrawer({ card, isOpen, onClose, onUpdate, onDelete }
                 opacity: isSaving ? 0.7 : 1,
               }}
             >
-              <span>{isSaving ? 'Saving...' : 'Save Changes'}</span>
+              {isSaving ? (
+                <span>Saving...</span>
+              ) : (
+                <>
+                  <i className="bi bi-check2"></i>
+                  <span>Save Changes</span>
+                </>
+              )}
               <kbd
                 style={{
                   fontFamily: 'var(--font-mono)',

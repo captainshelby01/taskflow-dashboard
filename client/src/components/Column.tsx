@@ -14,10 +14,10 @@ interface ColumnProps {
   onAddCard?: (title: string, status: Card['status']) => Promise<void>;
 }
 
-const STATUS_GLYPH: Record<Card['status'], string> = {
-  todo: '○',
-  in_progress: '◐',
-  done: '●',
+const STATUS_ICON_CLASS: Record<Card['status'], string> = {
+  todo: 'bi-circle',
+  in_progress: 'bi-clock-history',
+  done: 'bi-check-circle-fill',
 };
 
 export default function Column({ id, label, cards, pulsingIds, onSelectCard, onAddCard }: ColumnProps) {
@@ -73,16 +73,13 @@ export default function Column({ id, label, cards, pulsingIds, onSelectCard, onA
         }}
       >
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.55rem' }}>
-          <span
+          <i
+            className={`bi ${STATUS_ICON_CLASS[id]}`}
             style={{
               fontSize: '0.85rem',
               color: STATUS_COLOR[id],
-              fontWeight: 700,
-              display: 'inline-block',
             }}
-          >
-            {STATUS_GLYPH[id]}
-          </span>
+          ></i>
           <h2
             style={{
               fontSize: '0.82rem',
@@ -223,7 +220,8 @@ export default function Column({ id, label, cards, pulsingIds, onSelectCard, onA
             e.currentTarget.style.color = 'var(--ink-soft)';
           }}
         >
-          <span>+ Add task</span>
+          <i className="bi bi-plus-lg"></i>
+          <span>Add task</span>
         </button>
       )}
     </div>

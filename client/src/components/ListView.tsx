@@ -12,10 +12,10 @@ interface ListViewProps {
 
 const STATUS_ORDER: Card['status'][] = ['todo', 'in_progress', 'done'];
 
-const STATUS_METADATA: Record<Card['status'], { label: string; glyph: string }> = {
-  todo: { label: 'To Do', glyph: '○' },
-  in_progress: { label: 'In Progress', glyph: '◐' },
-  done: { label: 'Done', glyph: '●' },
+const STATUS_METADATA: Record<Card['status'], { label: string; iconClass: string }> = {
+  todo: { label: 'To Do', iconClass: 'bi-circle' },
+  in_progress: { label: 'In Progress', iconClass: 'bi-clock-history' },
+  done: { label: 'Done', iconClass: 'bi-check-circle-fill' },
 };
 
 export default function ListView({ cards, onSelectCard, onUpdateCard, onAddCard }: ListViewProps) {
@@ -113,15 +113,13 @@ export default function ListView({ cards, onSelectCard, onUpdateCard, onAddCard 
               }}
             >
               <div style={{ display: 'flex', alignItems: 'center', gap: '0.55rem' }}>
-                <span
+                <i
+                  className={`bi ${statusMeta.iconClass}`}
                   style={{
                     color: STATUS_COLOR[statusKey],
                     fontSize: '0.85rem',
-                    fontWeight: 700,
                   }}
-                >
-                  {statusMeta.glyph}
-                </span>
+                ></i>
                 <span style={{ fontSize: '0.82rem', fontWeight: 600, color: 'var(--ink)' }}>
                   {statusMeta.label}
                 </span>
@@ -154,10 +152,11 @@ export default function ListView({ cards, onSelectCard, onUpdateCard, onAddCard 
                   cursor: 'pointer',
                   display: 'flex',
                   alignItems: 'center',
-                  gap: '0.25rem',
+                  gap: '0.3rem',
                 }}
               >
-                <span>+ Add task</span>
+                <i className="bi bi-plus-lg"></i>
+                <span>Add task</span>
               </button>
             </div>
 
@@ -232,7 +231,7 @@ export default function ListView({ cards, onSelectCard, onUpdateCard, onAddCard 
                       transition: 'border-color 0.15s ease',
                     }}
                   >
-                    <span style={{ fontWeight: 700 }}>{STATUS_METADATA[card.status].glyph}</span>
+                    <i className={`bi ${STATUS_METADATA[card.status].iconClass}`} style={{ fontSize: '0.72rem' }}></i>
                     <span>{STATUS_METADATA[card.status].label}</span>
                   </button>
 
@@ -250,9 +249,12 @@ export default function ListView({ cards, onSelectCard, onUpdateCard, onAddCard 
                           padding: '0.08rem 0.35rem',
                           borderRadius: '3px',
                           flexShrink: 0,
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          gap: '0.25rem',
                         }}
                       >
-                        ● Blocker
+                        <i className="bi bi-exclamation-octagon-fill"></i> Blocker
                       </span>
                     )}
                     {card.blockedBy && (
@@ -267,9 +269,12 @@ export default function ListView({ cards, onSelectCard, onUpdateCard, onAddCard 
                           padding: '0.08rem 0.35rem',
                           borderRadius: '3px',
                           flexShrink: 0,
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          gap: '0.25rem',
                         }}
                       >
-                        ⚠ Blocked
+                        <i className="bi bi-pause-circle-fill"></i> Blocked
                       </span>
                     )}
                     {card.decision && (
@@ -283,9 +288,12 @@ export default function ListView({ cards, onSelectCard, onUpdateCard, onAddCard 
                           padding: '0.08rem 0.35rem',
                           borderRadius: '3px',
                           flexShrink: 0,
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          gap: '0.25rem',
                         }}
                       >
-                        ✦ Decision
+                        <i className="bi bi-check2-circle"></i> Decision
                       </span>
                     )}
                     <span
@@ -303,14 +311,16 @@ export default function ListView({ cards, onSelectCard, onUpdateCard, onAddCard 
                     {card.description && (
                       <span
                         style={{
-                          fontSize: '0.68rem',
+                          fontSize: '0.72rem',
                           color: 'var(--ink-soft)',
                           opacity: 0.7,
                           flexShrink: 0,
+                          display: 'inline-flex',
+                          alignItems: 'center',
                         }}
                         title="Contains notes"
                       >
-                        ≡
+                        <i className="bi bi-file-text"></i>
                       </span>
                     )}
                   </div>
@@ -330,7 +340,7 @@ export default function ListView({ cards, onSelectCard, onUpdateCard, onAddCard 
                       width: 'fit-content',
                     }}
                   >
-                    <span>{priorityInfo.glyph}</span> {priorityInfo.label}
+                    <i className={`bi ${priorityInfo.iconClass}`} style={{ fontSize: '0.68rem' }}></i> {priorityInfo.label}
                   </span>
 
                   {/* Target Due Date */}
@@ -339,10 +349,13 @@ export default function ListView({ cards, onSelectCard, onUpdateCard, onAddCard 
                       fontFamily: 'var(--font-mono)',
                       fontSize: '0.74rem',
                       color: card.dueDate ? 'var(--ink-soft)' : 'rgba(74, 77, 89, 0.4)',
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: '0.25rem',
                     }}
                   >
-                    {formattedDueDate !== '—' && <span style={{ marginRight: '0.2rem' }}>🗓</span>}
-                    {formattedDueDate}
+                    {formattedDueDate !== '—' && <i className="bi bi-calendar3" style={{ fontSize: '0.72rem' }}></i>}
+                    <span>{formattedDueDate}</span>
                   </span>
 
                   {/* Assignee Avatar */}
@@ -378,10 +391,15 @@ export default function ListView({ cards, onSelectCard, onUpdateCard, onAddCard 
                       fontFamily: 'var(--font-mono)',
                       fontSize: '0.72rem',
                       color: 'var(--ink-soft)',
-                      opacity: 0.6,
+                      opacity: 0.7,
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      justifyContent: 'flex-end',
+                      gap: '0.2rem',
                     }}
                   >
-                    Inspect ↗
+                    <span>Inspect</span>
+                    <i className="bi bi-box-arrow-up-right" style={{ fontSize: '0.68rem' }}></i>
                   </span>
                 </div>
               );

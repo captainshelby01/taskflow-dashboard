@@ -64,8 +64,8 @@ const INITIAL_DATA: DatabaseSchema = {
   cards: [
     {
       id: 'card-api-approval',
-      title: 'Bank API Gateway Approval & Production Sandbox Keys',
-      description: 'Awaiting production OAuth credentials and sandbox webhook activation from partner bank. Required before end-to-end payment testing can proceed.\n\n### Blocker Impact:\n- **Blocks**: End-to-End Payment Testing with 3D Secure\n- **Owner**: Sarah K. (Backend Lead)\n- **Status**: Escalated with bank account rep on Nov 12. Follow-up meeting scheduled 3:00 PM.',
+      title: 'Get bank approval & sandbox keys',
+      description: 'Awaiting production OAuth credentials and sandbox webhook activation from partner bank. Required before payment testing can proceed.\n\n### Blocker Impact:\n- **Blocks**: Test checkout payments & 3D Secure\n- **Owner**: Sarah K. (Backend Lead)\n- **Status**: Escalated with bank account rep on Nov 12. Follow-up meeting scheduled 3:00 PM.',
       status: 'in_progress',
       priority: 'urgent',
       dueDate: '2026-11-13',
@@ -75,12 +75,12 @@ const INITIAL_DATA: DatabaseSchema = {
       userId: DEMO_USER_ID,
       assignee: { name: 'Sarah K.', initials: 'SK', avatarColor: '#6366f1' },
       isBlocker: true,
-      blocks: 'End-to-End Payment Testing with 3D Secure',
+      blocks: 'Test checkout payments & 3D Secure',
     },
     {
       id: 'card-payment-testing',
-      title: 'End-to-End Payment Testing with 3D Secure Matrix',
-      description: 'Run full validation matrix of Visa Secure, Mastercard Identity Check, and AmEx SafeKey flows across mobile Safari, Android Chrome, and desktop browsers.\n\n### Dependency:\n- **Blocked by**: Bank API Gateway Approval & Production Sandbox Keys\n- **Target completion**: 24h after credentials cleared.',
+      title: 'Test checkout payments & 3D Secure',
+      description: 'Run full validation matrix of Visa Secure, Mastercard Identity Check, and AmEx SafeKey flows across mobile Safari, Android Chrome, and desktop browsers.\n\n### Dependency:\n- **Blocked by**: Get bank approval & sandbox keys\n- **Target completion**: 24h after credentials cleared.',
       status: 'todo',
       priority: 'high',
       dueDate: '2026-11-18',
@@ -89,11 +89,11 @@ const INITIAL_DATA: DatabaseSchema = {
       updatedAt: new Date('2026-11-12T14:30:00Z'),
       userId: DEMO_USER_ID,
       assignee: { name: 'Alex M.', initials: 'AM', avatarColor: '#0ea5e9' },
-      blockedBy: 'Bank API Gateway Approval',
+      blockedBy: 'Get bank approval & sandbox keys',
     },
     {
       id: 'card-guest-checkout',
-      title: 'Guest Checkout Flow & Address Autocomplete',
+      title: 'Add guest checkout & autocomplete',
       description: 'Allow first-time buyers to complete purchase without mandatory registration. Integrates Google Places autocomplete to minimize mobile address typos.\n\n### Key Metrics:\n- Reduces checkout friction from 4 screens to 2\n- Expected conversion lift: +12%',
       status: 'in_progress',
       priority: 'high',
@@ -104,7 +104,7 @@ const INITIAL_DATA: DatabaseSchema = {
       userId: DEMO_USER_ID,
       assignee: { name: 'Elena R.', initials: 'ER', avatarColor: '#10b981' },
       decision: {
-        title: 'Keep Guest Checkout in v2.4 Release Scope',
+        title: 'Allow checkout without account creation',
         rationale: 'Telemetry revealed an 18% cart abandonment rate at the mandatory registration wall. Postponing guest checkout would severely risk initial launch GMV.',
         decidedBy: 'Elena R. & Product Review',
         date: 'Nov 11, 2026',
@@ -112,7 +112,7 @@ const INITIAL_DATA: DatabaseSchema = {
     },
     {
       id: 'card-mobile-dropoff',
-      title: 'Mobile Checkout Funnel Telemetry & Viewport Polish',
+      title: 'Fix mobile checkout layout & CTA',
       description: 'Audit sticky payment CTA button behavior on compact 375px viewports (iPhone SE / mini). Ensure virtual keyboard appearance does not obscure total summary.',
       status: 'todo',
       priority: 'medium',
@@ -125,7 +125,7 @@ const INITIAL_DATA: DatabaseSchema = {
     },
     {
       id: 'card-deployment-runbook',
-      title: 'Production Zero-Downtime Deployment Runbook',
+      title: 'Production zero-downtime runbook',
       description: 'Finalize step-by-step rollout protocol, database migration safety scripts, and instant feature flag rollback criteria for Friday release.',
       status: 'todo',
       priority: 'low',
@@ -138,7 +138,7 @@ const INITIAL_DATA: DatabaseSchema = {
     },
     {
       id: 'card-stripe-elements',
-      title: 'Stripe Elements Migration & Apple Pay Integration',
+      title: 'Stripe Elements & Apple Pay',
       description: 'Migrated legacy form inputs to unified payment element with native Apple Pay and Google Pay one-click tokenization.',
       status: 'done',
       priority: 'high',
@@ -151,7 +151,7 @@ const INITIAL_DATA: DatabaseSchema = {
     },
     {
       id: 'card-cart-drawer',
-      title: 'Responsive Cart Drawer & Tax Estimation Layout',
+      title: 'Responsive cart drawer & taxes',
       description: 'Designed sliding slide-over cart drawer with instant promo code validation, shipping rate calculation, and cart item quantity steppers.',
       status: 'done',
       priority: 'medium',
@@ -164,7 +164,7 @@ const INITIAL_DATA: DatabaseSchema = {
     },
     {
       id: 'card-refund-webhook',
-      title: 'Idempotent Refund & Dispute Webhook Handlers',
+      title: 'Refund & dispute webhooks',
       description: 'Engineered cryptographic signature verification and idempotent processing for charge.refunded and dispute.created webhooks.',
       status: 'done',
       priority: 'low',

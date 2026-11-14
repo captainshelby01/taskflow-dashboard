@@ -5,6 +5,7 @@ import { api } from '../lib/api';
 import { useAuth } from '../lib/AuthContext';
 import { useTheme } from '../lib/ThemeContext';
 import Logo from '../components/Logo';
+import CaseStudyDrawer from '../components/CaseStudyDrawer';
 import { playHaptic } from '../lib/sound';
 import type { AuthResponse } from '../types';
 
@@ -13,6 +14,7 @@ export default function Login() {
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [showEmailForm, setShowEmailForm] = useState(false);
+  const [isCaseStudyOpen, setIsCaseStudyOpen] = useState(false);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
@@ -56,267 +58,245 @@ export default function Login() {
         minHeight: '100vh',
         display: 'flex',
         flexDirection: 'column',
-        alignItems: 'center',
-        justifyContent: 'center',
-        padding: '2.5rem 1.5rem',
         background: 'var(--paper)',
         position: 'relative',
-        overflow: 'hidden',
+        color: 'var(--ink)',
       }}
     >
-      {/* Top Navigation Bar: Theme Toggle */}
-      <div style={{ position: 'absolute', top: '1.25rem', right: '1.5rem', zIndex: 10 }}>
-        <button
-          type="button"
-          onClick={() => {
-            playHaptic('click');
-            toggleTheme();
-          }}
-          style={{
-            padding: '0.45rem 0.85rem',
-            borderRadius: 'var(--radius-sm)',
-            border: '1px solid var(--border)',
-            background: 'var(--surface)',
-            color: 'var(--ink)',
-            fontSize: '0.8rem',
-            fontFamily: 'var(--font-mono)',
-            cursor: 'pointer',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '0.45rem',
-            boxShadow: 'var(--shadow-sm)',
-            transition: 'all 0.15s ease',
-          }}
-          title="Toggle Dark mode / Light mode"
-          onMouseEnter={(e) => {
-            e.currentTarget.style.borderColor = 'var(--moss)';
-          }}
-          onMouseLeave={(e) => {
-            e.currentTarget.style.borderColor = 'var(--border)';
-          }}
-        >
-          <span>{theme === 'dark' ? '☀️' : '🌙'}</span>
-          <span>{theme === 'dark' ? 'Light mode' : 'Dark mode'}</span>
-        </button>
-      </div>
-
-      {/* Ambient Radial Spotlight Mesh */}
-      <div
+      {/* ── Global Top Bar: Brand, Case Study, Theme Toggle ── */}
+      <header
         style={{
-          position: 'absolute',
-          top: '-15%',
-          left: '50%',
-          transform: 'translateX(-50%)',
-          width: '780px',
-          height: '480px',
-          background: 'radial-gradient(circle, rgba(74, 222, 128, 0.08) 0%, rgba(56, 189, 248, 0.05) 50%, transparent 70%)',
-          filter: 'blur(50px)',
-          pointerEvents: 'none',
-          zIndex: 0,
+          width: '100%',
+          maxWidth: '1240px',
+          margin: '0 auto',
+          padding: '1.25rem 2rem',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          borderBottom: '1px solid var(--border)',
         }}
-      />
+      >
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.85rem' }}>
+          <Logo size="sm" showBadge={false} />
+          <span style={{ color: 'var(--border)', fontSize: '0.9rem' }}>/</span>
+          <span
+            style={{
+              fontFamily: 'var(--font-mono)',
+              fontSize: '0.74rem',
+              color: 'var(--ink-soft)',
+              letterSpacing: '0.04em',
+            }}
+          >
+            Release Risk Workspace
+          </span>
+        </div>
 
-      <div style={{ width: '100%', maxWidth: '490px', position: 'relative', zIndex: 1 }}>
-        {/* Brand & Editorial Narrative Header */}
-        <div style={{ textAlign: 'center', marginBottom: '2rem' }}>
-          <div style={{ display: 'inline-block', marginBottom: '1.25rem' }}>
-            <Logo size="md" showBadge={false} />
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+          <button
+            type="button"
+            onClick={() => {
+              playHaptic('click');
+              setIsCaseStudyOpen(true);
+            }}
+            style={{
+              padding: '0.4rem 0.75rem',
+              borderRadius: 'var(--radius-sm)',
+              border: '1px solid var(--border)',
+              background: 'var(--surface)',
+              color: 'var(--ink)',
+              fontSize: '0.78rem',
+              fontWeight: 600,
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '0.35rem',
+              transition: 'all 0.15s ease',
+            }}
+            title="Design Engineer case study and design decisions"
+          >
+            <i className="bi bi-journal-text" style={{ color: 'var(--moss)' }}></i>
+            <span>Case Study</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => {
+              playHaptic('click');
+              toggleTheme();
+            }}
+            style={{
+              padding: '0.4rem 0.75rem',
+              borderRadius: 'var(--radius-sm)',
+              border: '1px solid var(--border)',
+              background: 'var(--surface)',
+              color: 'var(--ink)',
+              fontSize: '0.78rem',
+              fontFamily: 'var(--font-mono)',
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '0.4rem',
+              transition: 'all 0.15s ease',
+            }}
+            title="Toggle Dark / Light mode"
+          >
+            <i className={theme === 'dark' ? "bi bi-sun-fill" : "bi bi-moon-stars-fill"}></i>
+            <span>{theme === 'dark' ? 'Light' : 'Dark'}</span>
+          </button>
+        </div>
+      </header>
+
+      {/* ── Main Split Hero: Editorial Action + Tangible Risk Map Preview ── */}
+      <main
+        style={{
+          flex: 1,
+          width: '100%',
+          maxWidth: '1240px',
+          margin: '0 auto',
+          padding: '3rem 2rem 4rem 2rem',
+          display: 'grid',
+          gridTemplateColumns: 'repeat(auto-fit, minmax(460px, 1fr))',
+          gap: '3.5rem',
+          alignItems: 'center',
+        }}
+      >
+        {/* Left Column: Problem-First Editorial & One-Click Access */}
+        <div>
+          <div
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '0.4rem',
+              fontSize: '0.72rem',
+              fontFamily: 'var(--font-mono)',
+              fontWeight: 700,
+              color: '#ef4444',
+              background: 'rgba(239, 68, 68, 0.1)',
+              border: '1px solid rgba(239, 68, 68, 0.25)',
+              padding: '0.2rem 0.6rem',
+              borderRadius: '999px',
+              marginBottom: '1.25rem',
+              textTransform: 'uppercase',
+              letterSpacing: '0.04em',
+            }}
+          >
+            <i className="bi bi-shield-exclamation" style={{ fontSize: '0.75rem' }}></i>
+            <span>Release-First Planning</span>
           </div>
 
           <h1
             style={{
               fontFamily: 'var(--font-display)',
-              fontSize: '1.95rem',
+              fontSize: '2.5rem',
               fontWeight: 800,
               color: 'var(--ink)',
               letterSpacing: '-0.035em',
-              lineHeight: 1.2,
-              marginBottom: '0.75rem',
+              lineHeight: 1.15,
+              marginBottom: '1rem',
             }}
           >
-            See what’s putting your next release at risk.
+            Your release is not late. It is blocked.
           </h1>
 
           <p
             style={{
+              fontSize: '1.05rem',
+              lineHeight: 1.6,
               color: 'var(--ink-soft)',
-              fontSize: '0.94rem',
-              lineHeight: 1.55,
-              maxWidth: '430px',
-              margin: '0 auto',
+              marginBottom: '2rem',
+              maxWidth: '520px',
             }}
           >
-            A planning workspace for small product teams—connecting tasks, dependencies, and decisions in one place.
+            TaskFlow maps root blockers, downstream work, and attached decisions in one interactive
+            workspace—so product teams understand delivery risk before launch day.
           </p>
-        </div>
 
-        {/* Main Experience Card */}
-        <div
-          style={{
-            background: 'var(--surface)',
-            borderRadius: 'var(--radius-lg)',
-            padding: '1.85rem',
-            boxShadow: '0 24px 48px -12px rgba(0, 0, 0, 0.18), 0 0 0 1px var(--border)',
-            border: '1px solid var(--border)',
-          }}
-        >
-          {/* Sample Release Preview Card (Gives immediate context before clicking) */}
-          <div
-            style={{
-              background: 'var(--paper)',
-              borderRadius: 'var(--radius-md)',
-              border: '1px solid var(--border)',
-              padding: '1rem 1.15rem',
-              marginBottom: '1.5rem',
-            }}
-          >
-            <div
+          {/* Primary Call to Action */}
+          <div style={{ maxWidth: '420px', marginBottom: '2rem' }}>
+            <button
+              type="button"
+              onClick={handleExploreDemo}
+              disabled={loading}
               style={{
+                width: '100%',
+                padding: '0.95rem 1.4rem',
+                borderRadius: 'var(--radius-md)',
+                border: 'none',
+                background: 'var(--moss)',
+                color: '#ffffff',
+                fontSize: '1rem',
+                fontWeight: 700,
+                fontFamily: 'var(--font-display)',
+                cursor: loading ? 'not-allowed' : 'pointer',
                 display: 'flex',
                 alignItems: 'center',
-                justifyContent: 'space-between',
-                marginBottom: '0.65rem',
+                justifyContent: 'center',
+                gap: '0.65rem',
+                boxShadow: 'var(--shadow-md)',
+                transition: 'all 0.15s ease',
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.transform = 'translateY(-1px)';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.transform = 'translateY(0)';
               }}
             >
-              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                <span
-                  style={{
-                    width: '8px',
-                    height: '8px',
-                    borderRadius: '50%',
-                    background: '#f87171',
-                    boxShadow: '0 0 8px rgba(248, 113, 113, 0.6)',
-                  }}
-                />
-                <span
-                  style={{
-                    fontFamily: 'var(--font-mono)',
-                    fontSize: '0.72rem',
-                    fontWeight: 700,
-                    color: '#f87171',
-                    letterSpacing: '0.04em',
-                    textTransform: 'uppercase',
-                  }}
-                >
-                  Release at risk
-                </span>
-              </div>
-              <span
-                style={{
-                  fontSize: '0.74rem',
-                  color: 'var(--ink-soft)',
-                  fontFamily: 'var(--font-mono)',
-                }}
-              >
-                Target: Friday, 20 Nov
-              </span>
-            </div>
-
-            <div
-              style={{
-                fontFamily: 'var(--font-display)',
-                fontSize: '0.92rem',
-                fontWeight: 700,
-                color: 'var(--ink)',
-                marginBottom: '0.45rem',
-              }}
-            >
-              Checkout Redesign v2.4
-            </div>
-
-            {/* Blocked dependency chain preview */}
-            <div
-              style={{
-                background: 'rgba(248, 113, 113, 0.08)',
-                border: '1px solid rgba(248, 113, 113, 0.2)',
-                borderRadius: 'var(--radius-sm)',
-                padding: '0.55rem 0.75rem',
-                fontSize: '0.78rem',
-                color: 'var(--ink)',
-                lineHeight: 1.45,
-                display: 'flex',
-                alignItems: 'flex-start',
-                gap: '0.5rem',
-              }}
-            >
-              <span style={{ color: '#f87171', fontWeight: 700 }}>⚠ Blocker:</span>
-              <span>
-                <strong>Payment testing</strong> is blocked by <strong>Bank API approval</strong> (Sarah K. · Overdue 13 Nov)
-              </span>
-            </div>
+              <span>{loading ? 'Entering Workspace...' : 'Explore Live Demo'}</span>
+              <i className="bi bi-arrow-right"></i>
+            </button>
 
             <div
               style={{
                 marginTop: '0.65rem',
-                display: 'flex',
-                justifyContent: 'space-between',
-                fontSize: '0.73rem',
+                textAlign: 'center',
+                fontSize: '0.78rem',
                 color: 'var(--ink-soft)',
                 fontFamily: 'var(--font-mono)',
               }}
             >
-              <span>3 of 8 tasks complete</span>
-              <span>1 decision attached</span>
+              No account required · Preloaded with Checkout Redesign v2.4
             </div>
           </div>
 
-          {/* Primary Action: Explore Live Demo */}
-          <button
-            type="button"
-            onClick={handleExploreDemo}
-            disabled={loading}
-            style={{
-              width: '100%',
-              padding: '0.95rem 1.25rem',
-              borderRadius: 'var(--radius-md)',
-              border: 'none',
-              background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
-              color: '#ffffff',
-              fontSize: '1rem',
-              fontWeight: 700,
-              fontFamily: 'var(--font-display)',
-              cursor: 'pointer',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              gap: '0.6rem',
-              boxShadow: '0 6px 20px rgba(16, 185, 129, 0.35)',
-              transition: 'all 0.15s ease',
-              opacity: loading ? 0.75 : 1,
-            }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.transform = 'translateY(-1px)';
-              e.currentTarget.style.boxShadow = '0 8px 24px rgba(16, 185, 129, 0.45)';
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.transform = 'translateY(0)';
-              e.currentTarget.style.boxShadow = '0 6px 20px rgba(16, 185, 129, 0.35)';
-            }}
-          >
-            <span>{loading ? 'Entering Workspace...' : 'Explore Live Demo'}</span>
-            <span>↵</span>
-          </button>
-
-          <p
-            style={{
-              textAlign: 'center',
-              fontSize: '0.76rem',
-              color: 'var(--ink-soft)',
-              marginTop: '0.65rem',
-              marginBottom: '1.25rem',
-            }}
-          >
-            No account required. Preloaded with the Checkout Redesign release.
-          </p>
-
-          {/* Secondary Action: Toggle Email Sign-in */}
+          {/* 3 Outcome Proof Points */}
           <div
             style={{
+              display: 'flex',
+              flexDirection: 'column',
+              gap: '0.75rem',
+              paddingTop: '1.5rem',
               borderTop: '1px solid var(--border)',
-              paddingTop: '1rem',
-              textAlign: 'center',
+              maxWidth: '480px',
             }}
           >
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem', fontSize: '0.84rem' }}>
+              <i className="bi bi-diagram-3" style={{ color: 'var(--moss)', fontSize: '0.9rem' }}></i>
+              <span style={{ color: 'var(--ink-soft)' }}>
+                <strong style={{ color: 'var(--ink)' }}>Visual Risk Path:</strong> Trace the causal chain
+                from root blocker to release deadline.
+              </span>
+            </div>
+
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem', fontSize: '0.84rem' }}>
+              <i className="bi bi-check2-circle" style={{ color: 'var(--moss)', fontSize: '0.9rem' }}></i>
+              <span style={{ color: 'var(--ink-soft)' }}>
+                <strong style={{ color: 'var(--ink)' }}>Decisions Attached to Work:</strong> Document scope
+                trade-offs directly beside the task.
+              </span>
+            </div>
+
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem', fontSize: '0.84rem' }}>
+              <i className="bi bi-lightning-charge" style={{ color: 'var(--moss)', fontSize: '0.9rem' }}></i>
+              <span style={{ color: 'var(--ink-soft)' }}>
+                <strong style={{ color: 'var(--ink)' }}>Deterministic &amp; Tactile:</strong> Instant local
+                updates and Web Audio mechanical haptics.
+              </span>
+            </div>
+          </div>
+
+          {/* Secondary Collapsible Email Form */}
+          <div style={{ marginTop: '2rem', maxWidth: '420px' }}>
             <button
               type="button"
               onClick={() => setShowEmailForm(!showEmailForm)}
@@ -324,108 +304,59 @@ export default function Login() {
                 background: 'transparent',
                 border: 'none',
                 color: 'var(--ink-soft)',
-                fontSize: '0.82rem',
+                fontSize: '0.8rem',
                 cursor: 'pointer',
                 display: 'inline-flex',
                 alignItems: 'center',
                 gap: '0.4rem',
-                fontWeight: 500,
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.color = 'var(--ink)';
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.color = 'var(--ink-soft)';
+                padding: 0,
               }}
             >
-              <span>{showEmailForm ? 'Hide email sign-in' : 'Already have an account? Sign in with email'}</span>
-              <span style={{ fontSize: '0.7rem' }}>{showEmailForm ? '▲' : '▼'}</span>
+              <span>{showEmailForm ? 'Hide email sign-in' : 'Have an existing account? Sign in with email'}</span>
+              <i className={showEmailForm ? "bi bi-chevron-up" : "bi bi-chevron-down"} style={{ fontSize: '0.7rem' }}></i>
             </button>
-          </div>
 
-          {/* Collapsible Email Sign-in Form */}
-          {showEmailForm && (
-            <form onSubmit={handleSubmit} style={{ marginTop: '1.25rem' }}>
-              {error && (
-                <div
-                  style={{
-                    background: 'var(--clay-soft)',
-                    color: 'var(--clay)',
-                    padding: '0.65rem 0.85rem',
-                    borderRadius: 'var(--radius-sm)',
-                    marginBottom: '1rem',
-                    fontSize: '0.82rem',
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '0.5rem',
-                    border: '1px solid rgba(248, 113, 113, 0.3)',
-                  }}
-                >
-                  <span>✕</span>
-                  <span>{error}</span>
-                </div>
-              )}
-
-              <div style={{ marginBottom: '1rem' }}>
-                <label
-                  htmlFor="email"
-                  style={{
-                    display: 'block',
-                    fontSize: '0.78rem',
-                    fontWeight: 600,
-                    color: 'var(--ink)',
-                    marginBottom: '0.4rem',
-                  }}
-                >
-                  Email Address
-                </label>
-                <input
-                  id="email"
-                  type="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  placeholder="name@company.com"
-                  required
-                  style={{
-                    width: '100%',
-                    padding: '0.65rem 0.85rem',
-                    borderRadius: 'var(--radius-sm)',
-                    border: '1px solid var(--border)',
-                    background: 'var(--paper)',
-                    color: 'var(--ink)',
-                    fontSize: '0.88rem',
-                    outline: 'none',
-                    boxSizing: 'border-box',
-                  }}
-                  onFocus={(e) => {
-                    e.target.style.borderColor = 'var(--moss)';
-                  }}
-                  onBlur={(e) => {
-                    e.target.style.borderColor = 'var(--border)';
-                  }}
-                />
-              </div>
-
-              <div style={{ marginBottom: '1.25rem' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.4rem' }}>
-                  <label
-                    htmlFor="password"
+            {showEmailForm && (
+              <form onSubmit={handleSubmit} style={{ marginTop: '1rem' }}>
+                {error && (
+                  <div
                     style={{
-                      fontSize: '0.78rem',
-                      fontWeight: 600,
-                      color: 'var(--ink)',
+                      background: 'var(--clay-soft)',
+                      color: 'var(--clay)',
+                      padding: '0.55rem 0.75rem',
+                      borderRadius: 'var(--radius-sm)',
+                      marginBottom: '0.75rem',
+                      fontSize: '0.8rem',
+                      border: '1px solid rgba(248, 113, 113, 0.3)',
                     }}
                   >
-                    Password
-                  </label>
-                  <span style={{ fontSize: '0.72rem', color: 'var(--ink-soft)', fontFamily: 'var(--font-mono)' }}>
-                    Demo: password123
-                  </span>
+                    {error}
+                  </div>
+                )}
+
+                <div style={{ marginBottom: '0.75rem' }}>
+                  <input
+                    type="email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    placeholder="name@company.com"
+                    required
+                    style={{
+                      width: '100%',
+                      padding: '0.6rem 0.8rem',
+                      borderRadius: 'var(--radius-sm)',
+                      border: '1px solid var(--border)',
+                      background: 'var(--surface)',
+                      color: 'var(--ink)',
+                      fontSize: '0.85rem',
+                      outline: 'none',
+                      boxSizing: 'border-box',
+                    }}
+                  />
                 </div>
 
-                <div style={{ position: 'relative' }}>
+                <div style={{ marginBottom: '0.75rem', position: 'relative' }}>
                   <input
-                    id="password"
                     type={showPassword ? 'text' : 'password'}
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
@@ -433,20 +364,14 @@ export default function Login() {
                     required
                     style={{
                       width: '100%',
-                      padding: '0.65rem 2.4rem 0.65rem 0.85rem',
+                      padding: '0.6rem 2.2rem 0.6rem 0.8rem',
                       borderRadius: 'var(--radius-sm)',
                       border: '1px solid var(--border)',
-                      background: 'var(--paper)',
+                      background: 'var(--surface)',
                       color: 'var(--ink)',
-                      fontSize: '0.88rem',
+                      fontSize: '0.85rem',
                       outline: 'none',
                       boxSizing: 'border-box',
-                    }}
-                    onFocus={(e) => {
-                      e.target.style.borderColor = 'var(--moss)';
-                    }}
-                    onBlur={(e) => {
-                      e.target.style.borderColor = 'var(--border)';
                     }}
                   />
                   <button
@@ -462,66 +387,278 @@ export default function Login() {
                       color: 'var(--ink-soft)',
                       cursor: 'pointer',
                       fontSize: '0.85rem',
-                      padding: '0.2rem',
+                      display: 'flex',
+                      alignItems: 'center',
                     }}
-                    title={showPassword ? 'Hide password' : 'Show password'}
                   >
-                    {showPassword ? '🙈' : '👁'}
+                    <i className={showPassword ? "bi bi-eye-slash" : "bi bi-eye"}></i>
                   </button>
+                </div>
+
+                <button
+                  type="submit"
+                  disabled={loading}
+                  style={{
+                    width: '100%',
+                    padding: '0.65rem 1rem',
+                    borderRadius: 'var(--radius-sm)',
+                    border: '1px solid var(--border)',
+                    background: 'var(--surface)',
+                    color: 'var(--ink)',
+                    fontSize: '0.85rem',
+                    fontWeight: 600,
+                    cursor: 'pointer',
+                  }}
+                >
+                  Sign in
+                </button>
+
+                <div style={{ marginTop: '0.65rem', textAlign: 'center', fontSize: '0.78rem', color: 'var(--ink-soft)' }}>
+                  New here?{' '}
+                  <Link to="/signup" style={{ color: 'var(--moss)', fontWeight: 600, textDecoration: 'none' }}>
+                    Create account
+                  </Link>
+                </div>
+              </form>
+            )}
+          </div>
+        </div>
+
+        {/* Right Column: Tangible Workspace Window Preview */}
+        <div>
+          <div
+            style={{
+              background: 'var(--surface)',
+              border: '1px solid var(--border)',
+              borderRadius: 'var(--radius-lg)',
+              boxShadow: 'var(--shadow-lg)',
+              overflow: 'hidden',
+              transition: 'all 0.2s ease',
+            }}
+          >
+            {/* Window Frame Bar */}
+            <div
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                padding: '0.65rem 1rem',
+                background: 'var(--paper)',
+                borderBottom: '1px solid var(--border)',
+              }}
+            >
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.45rem' }}>
+                <span style={{ width: '10px', height: '10px', borderRadius: '50%', background: '#f87171' }} />
+                <span style={{ width: '10px', height: '10px', borderRadius: '50%', background: '#fbbf24' }} />
+                <span style={{ width: '10px', height: '10px', borderRadius: '50%', background: '#4ade80' }} />
+              </div>
+              <span
+                style={{
+                  fontFamily: 'var(--font-mono)',
+                  fontSize: '0.72rem',
+                  color: 'var(--ink-soft)',
+                }}
+              >
+                Checkout Redesign v2.4 — Release Risk Map
+              </span>
+              <span style={{ fontSize: '0.7rem', color: 'var(--ink-soft)', opacity: 0.5 }}>⌘K</span>
+            </div>
+
+            {/* Window Content */}
+            <div style={{ padding: '1.25rem 1.5rem', display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+              {/* Release Header Strip */}
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '0.5rem' }}>
+                <div>
+                  <h3 style={{ margin: 0, fontSize: '1.2rem', fontWeight: 800, color: 'var(--ink)', letterSpacing: '-0.02em' }}>
+                    Checkout Redesign v2.4
+                  </h3>
+                  <span style={{ fontSize: '0.78rem', color: 'var(--ink-soft)' }}>
+                    Target: Friday, 20 Nov · 3 of 8 complete
+                  </span>
+                </div>
+
+                <span
+                  style={{
+                    fontSize: '0.72rem',
+                    fontFamily: 'var(--font-mono)',
+                    fontWeight: 700,
+                    color: '#ef4444',
+                    background: 'rgba(239, 68, 68, 0.1)',
+                    border: '1px solid rgba(239, 68, 68, 0.25)',
+                    padding: '0.2rem 0.55rem',
+                    borderRadius: '999px',
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '0.3rem',
+                  }}
+                >
+                  <i className="bi bi-exclamation-octagon-fill"></i>
+                  <span>1 Release Blocker</span>
+                </span>
+              </div>
+
+              {/* The Visual Causal Chain (The Hero Feature) */}
+              <div
+                style={{
+                  background: 'var(--paper)',
+                  border: '1px solid var(--border)',
+                  borderRadius: 'var(--radius-md)',
+                  padding: '1rem',
+                }}
+              >
+                <div
+                  style={{
+                    fontFamily: 'var(--font-mono)',
+                    fontSize: '0.68rem',
+                    fontWeight: 700,
+                    textTransform: 'uppercase',
+                    color: 'var(--ink-soft)',
+                    marginBottom: '0.75rem',
+                  }}
+                >
+                  Causal Dependency Chain
+                </div>
+
+                <div
+                  style={{
+                    display: 'grid',
+                    gridTemplateColumns: '1fr auto 1fr',
+                    gap: '0.65rem',
+                    alignItems: 'center',
+                  }}
+                >
+                  {/* Node 1 */}
+                  <div
+                    style={{
+                      background: 'var(--surface)',
+                      border: '1px solid rgba(239, 68, 68, 0.3)',
+                      borderLeft: '3px solid #ef4444',
+                      borderRadius: 'var(--radius-sm)',
+                      padding: '0.6rem 0.75rem',
+                    }}
+                  >
+                    <span style={{ fontSize: '0.65rem', fontFamily: 'var(--font-mono)', color: '#ef4444', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '0.3rem' }}>
+                      <i className="bi bi-exclamation-octagon-fill"></i>
+                      <span>BLOCKER · OVERDUE</span>
+                    </span>
+                    <strong style={{ fontSize: '0.8rem', color: 'var(--ink)', display: 'block', lineHeight: 1.25 }}>
+                      Get bank approval &amp; keys
+                    </strong>
+                    <span style={{ fontSize: '0.7rem', color: 'var(--ink-soft)' }}>Sarah K. · Nov 13</span>
+                  </div>
+
+                  {/* Arrow */}
+                  <div style={{ color: '#ef4444', fontSize: '0.75rem', fontWeight: 700, textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                    <span>blocks</span>
+                    <i className="bi bi-arrow-right"></i>
+                  </div>
+
+                  {/* Node 2 */}
+                  <div
+                    style={{
+                      background: 'var(--surface)',
+                      border: '1px solid rgba(245, 158, 11, 0.3)',
+                      borderLeft: '3px solid #f59e0b',
+                      borderRadius: 'var(--radius-sm)',
+                      padding: '0.6rem 0.75rem',
+                    }}
+                  >
+                    <span style={{ fontSize: '0.65rem', fontFamily: 'var(--font-mono)', color: '#f59e0b', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '0.3rem' }}>
+                      <i className="bi bi-pause-circle-fill"></i>
+                      <span>PAUSED WORK</span>
+                    </span>
+                    <strong style={{ fontSize: '0.8rem', color: 'var(--ink)', display: 'block', lineHeight: 1.25 }}>
+                      Test checkout payments
+                    </strong>
+                    <span style={{ fontSize: '0.7rem', color: 'var(--ink-soft)' }}>Alex M. · Awaiting keys</span>
+                  </div>
                 </div>
               </div>
 
+              {/* Blocker Action & Attached Decision Callout */}
+              <div
+                style={{
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: '0.5rem',
+                }}
+              >
+                <div
+                  style={{
+                    background: 'rgba(239, 68, 68, 0.05)',
+                    border: '1px solid rgba(239, 68, 68, 0.2)',
+                    borderRadius: 'var(--radius-sm)',
+                    padding: '0.65rem 0.85rem',
+                    fontSize: '0.78rem',
+                    lineHeight: 1.45,
+                  }}
+                >
+                  <strong style={{ color: '#ef4444' }}>Next Action: </strong>
+                  <span style={{ color: 'var(--ink)' }}>
+                    Escalate partner bank meeting at 3:00 PM for OAuth sandbox tokens.
+                  </span>
+                </div>
+
+                <div
+                  style={{
+                    background: 'var(--moss-soft)',
+                    border: '1px solid rgba(45, 90, 63, 0.2)',
+                    borderRadius: 'var(--radius-sm)',
+                    padding: '0.65rem 0.85rem',
+                    fontSize: '0.78rem',
+                    lineHeight: 1.45,
+                    display: 'flex',
+                    alignItems: 'baseline',
+                    gap: '0.35rem',
+                  }}
+                >
+                  <strong style={{ color: 'var(--moss)', display: 'inline-flex', alignItems: 'center', gap: '0.25rem' }}>
+                    <i className="bi bi-check2-circle"></i>
+                    <span>Decision Trail:</span>
+                  </strong>
+                  <span style={{ color: 'var(--ink)' }}>
+                    Allow checkout without account to avoid 18% cart drop-off (Elena R. · Nov 11).
+                  </span>
+                </div>
+              </div>
+
+              {/* Enter Live Workspace Action inside Preview */}
               <button
-                type="submit"
-                disabled={loading}
+                type="button"
+                onClick={handleExploreDemo}
                 style={{
                   width: '100%',
-                  padding: '0.7rem 1rem',
+                  padding: '0.75rem 1rem',
                   borderRadius: 'var(--radius-sm)',
                   border: '1px solid var(--border)',
-                  background: 'var(--surface)',
+                  background: 'var(--paper)',
                   color: 'var(--ink)',
-                  fontSize: '0.86rem',
+                  fontSize: '0.84rem',
                   fontWeight: 600,
                   cursor: 'pointer',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
-                  gap: '0.5rem',
+                  gap: '0.45rem',
+                  transition: 'all 0.15s ease',
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.borderColor = 'var(--moss)';
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.borderColor = 'var(--border)';
                 }}
               >
-                <span>{loading ? 'Authenticating...' : 'Sign in to account'}</span>
+                <span>Open Live Workspace &amp; Trace Blocker</span>
+                <i className="bi bi-arrow-right"></i>
               </button>
-
-              <div style={{ marginTop: '0.85rem', textAlign: 'center', fontSize: '0.78rem', color: 'var(--ink-soft)' }}>
-                New here?{' '}
-                <Link to="/signup" style={{ color: 'var(--moss)', fontWeight: 600, textDecoration: 'none' }}>
-                  Create account
-                </Link>
-              </div>
-            </form>
-          )}
+            </div>
+          </div>
         </div>
+      </main>
 
-        {/* Product-Facing Benefit Indicators (Outcome-driven, no tech bragging) */}
-        <div
-          style={{
-            marginTop: '1.75rem',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            gap: '1.5rem',
-            fontSize: '0.78rem',
-            color: 'var(--ink-soft)',
-          }}
-        >
-          <span>⚡ Changes sync instantly</span>
-          <span>·</span>
-          <span>⎇ Visual blocker trace</span>
-          <span>·</span>
-          <span>✦ Decisions attached to work</span>
-        </div>
-      </div>
+      {/* Case Study Modal */}
+      <CaseStudyDrawer isOpen={isCaseStudyOpen} onClose={() => setIsCaseStudyOpen(false)} />
     </div>
   );
 }

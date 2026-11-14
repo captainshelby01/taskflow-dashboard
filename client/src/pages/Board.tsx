@@ -17,6 +17,8 @@ import Column from '../components/Column';
 import ListView from '../components/ListView';
 import CardDrawer from '../components/CardDrawer';
 import CommandPalette from '../components/CommandPalette';
+import RiskPath from '../components/RiskPath';
+import CaseStudyDrawer from '../components/CaseStudyDrawer';
 import Logo from '../components/Logo';
 import { CardView } from '../components/SortableCard';
 import { playHaptic, isSoundEnabled, toggleSound } from '../lib/sound';
@@ -42,6 +44,8 @@ export default function Board() {
   const [isPaletteOpen, setIsPaletteOpen] = useState(false);
   const [activeFilter, setActiveFilter] = useState<Priority | null>(null);
   const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
+  const [isCaseStudyOpen, setIsCaseStudyOpen] = useState(false);
+  const [isResolvingBlocker, setIsResolvingBlocker] = useState(false);
   const profileMenuRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const { theme, toggleTheme } = useTheme();
@@ -273,6 +277,65 @@ export default function Board() {
     return deleteCard(id);
   };
 
+  const handleResolveBlocker = async () => {
+    setIsResolvingBlocker(true);
+    try {
+      const blocker = cards.find((c) => c.id === 'card-api-approval' || c.isBlocker);
+      const dependent = cards.find((c) => c.id === 'card-payment-testing' || c.blockedBy);
+
+      if (blocker) {
+        await updateCard(blocker.id, {
+          status: 'done',
+          isBlocker: false,
+          blocks: undefined,
+        });
+      }
+      if (dependent) {
+        await updateCard(dependent.id, {
+          blockedBy: undefined,
+          status: 'in_progress',
+        });
+      }
+      playHaptic('complete');
+      triggerConfetti();
+    } catch (err) {
+      console.error('Failed to resolve blocker:', err);
+    } finally {
+      setIsResolvingBlocker(false);
+    }
+  };
+
+  const handleResetScenario = async () => {
+    setIsResolvingBlocker(true);
+    try {
+      const blocker = cards.find((c) => c.id === 'card-api-approval');
+      const dependent = cards.find((c) => c.id === 'card-payment-testing');
+
+      if (blocker) {
+        await updateCard(blocker.id, {
+          status: 'in_progress',
+          isBlocker: true,
+          blocks: 'Test checkout payments & 3D Secure',
+        });
+      }
+      if (dependent) {
+        await updateCard(dependent.id, {
+          status: 'todo',
+          blockedBy: 'Get bank approval & sandbox keys',
+        });
+      }
+      playHaptic('pickup');
+    } catch (err) {
+      console.error('Failed to reset scenario:', err);
+    } finally {
+      setIsResolvingBlocker(false);
+    }
+  };
+
+  const hasActiveBlocker = cards.some(
+    (c) => (c.isBlocker || c.id === 'card-api-approval') && c.status !== 'done'
+  );
+
   // Filtered Cards (activeFilter applied to both views)
   const filteredCards = activeFilter
     ? cards.filter((c) => (c.priority || 'medium') === activeFilter)
@@ -397,7 +460,7 @@ export default function Board() {
           }}
         >
           <span style={{ display: 'flex', alignItems: 'center', gap: '0.45rem' }}>
-            <span>🔍</span>
+            <i className="bi bi-search" style={{ fontSize: '0.8rem' }}></i>
             <span>Search or jump to...</span>
           </span>
           <kbd
@@ -557,8 +620,16 @@ export default function Board() {
                   }}
                 >
                   <span>Appearance</span>
-                  <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.74rem', color: 'var(--ink-soft)' }}>
-                    {theme === 'dark' ? '🌙 Dark' : '☀️ Light'}
+                  <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.74rem', color: 'var(--ink-soft)', display: 'inline-flex', alignItems: 'center', gap: '0.35rem' }}>
+                    {theme === 'dark' ? (
+                      <>
+                        <i className="bi bi-moon-stars-fill"></i> Dark
+                      </>
+                    ) : (
+                      <>
+                        <i className="bi bi-sun-fill"></i> Light
+                      </>
+                    )}
                   </span>
                 </button>
 
@@ -590,8 +661,16 @@ export default function Board() {
                   }}
                 >
                   <span>Audio feedback</span>
-                  <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.74rem', color: 'var(--ink-soft)' }}>
-                    {soundActive ? '🔊 ON' : '🔇 Muted'}
+                  <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.74rem', color: 'var(--ink-soft)', display: 'inline-flex', alignItems: 'center', gap: '0.35rem' }}>
+                    {soundActive ? (
+                      <>
+                        <i className="bi bi-volume-up-fill"></i> ON
+                      </>
+                    ) : (
+                      <>
+                        <i className="bi bi-volume-mute-fill"></i> Muted
+                      </>
+                    )}
                   </span>
                 </button>
 
@@ -604,6 +683,7 @@ export default function Board() {
                     width: '100%',
                     display: 'flex',
                     alignItems: 'center',
+                    gap: '0.45rem',
                     padding: '0.55rem 0.75rem',
                     borderRadius: 'var(--radius-sm)',
                     border: 'none',
@@ -621,11 +701,38 @@ export default function Board() {
                     e.currentTarget.style.background = 'transparent';
                   }}
                 >
-                  Sign out
+                  <i className="bi bi-box-arrow-right"></i>
+                  <span>Sign out</span>
                 </button>
               </div>
             )}
           </div>
+
+          {/* About / Case Study Trigger */}
+          <button
+            onClick={() => {
+              setIsCaseStudyOpen(true);
+              playHaptic('click');
+            }}
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '0.35rem',
+              padding: '0.35rem 0.65rem',
+              borderRadius: 'var(--radius-sm)',
+              background: 'var(--paper)',
+              border: '1px solid var(--border)',
+              fontSize: '0.78rem',
+              fontWeight: 600,
+              color: 'var(--ink)',
+              cursor: 'pointer',
+              transition: 'all 0.15s ease',
+            }}
+            title="Read Design Engineering Case Study & Trade-offs"
+          >
+            <i className="bi bi-journal-text" style={{ color: 'var(--moss)' }}></i>
+            <span>Case Study</span>
+          </button>
         </div>
       </header>
 
@@ -684,7 +791,7 @@ export default function Board() {
                 style={{
                   display: 'inline-flex',
                   alignItems: 'center',
-                  gap: '0.3rem',
+                  gap: '0.35rem',
                   fontSize: '0.76rem',
                   fontWeight: currentView === 'board' ? 600 : 500,
                   color: currentView === 'board' ? 'var(--ink)' : 'var(--ink-soft)',
@@ -697,7 +804,7 @@ export default function Board() {
                   transition: 'all 0.12s ease',
                 }}
               >
-                <span>☷</span>
+                <i className="bi bi-kanban"></i>
                 <span>Board</span>
               </button>
               <button
@@ -708,7 +815,7 @@ export default function Board() {
                 style={{
                   display: 'inline-flex',
                   alignItems: 'center',
-                  gap: '0.3rem',
+                  gap: '0.35rem',
                   fontSize: '0.76rem',
                   fontWeight: currentView === 'list' ? 600 : 500,
                   color: currentView === 'list' ? 'var(--ink)' : 'var(--ink-soft)',
@@ -721,7 +828,7 @@ export default function Board() {
                   transition: 'all 0.12s ease',
                 }}
               >
-                <span>☰</span>
+                <i className="bi bi-list-task"></i>
                 <span>List</span>
               </button>
             </div>
@@ -748,7 +855,7 @@ export default function Board() {
                 transition: 'all 0.15s ease',
               }}
             >
-              <span>+</span>
+              <i className="bi bi-plus-lg"></i>
               <span>Add Task</span>
             </button>
           </div>
@@ -781,61 +888,88 @@ export default function Board() {
                 gap: '0.35rem',
               }}
             >
-              <span>📅</span>
+              <i className="bi bi-calendar3" style={{ fontSize: '0.75rem' }}></i>
               <span>Target: Friday, 20 Nov</span>
             </span>
 
             <span style={{ color: 'var(--border)' }}>·</span>
 
             {/* Blocker Pill */}
-            <span
-              style={{
-                fontSize: '0.74rem',
-                fontFamily: 'var(--font-mono)',
-                fontWeight: 700,
-                color: '#f87171',
-                background: 'rgba(248, 113, 113, 0.12)',
-                border: '1px solid rgba(248, 113, 113, 0.25)',
-                padding: '0.2rem 0.55rem',
-                borderRadius: '999px',
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: '0.35rem',
-              }}
-              title="Payment integration testing is blocked by Bank API approval"
-            >
-              <span>●</span>
-              <span>1 Release Blocker</span>
-            </span>
-
-            <span style={{ color: 'var(--border)' }}>·</span>
-
-            {/* Overdue Pill */}
-            <span
-              style={{
-                fontSize: '0.74rem',
-                fontFamily: 'var(--font-mono)',
-                color: '#fbbf24',
-                background: 'rgba(251, 191, 36, 0.12)',
-                border: '1px solid rgba(251, 191, 36, 0.25)',
-                padding: '0.2rem 0.55rem',
-                borderRadius: '999px',
-              }}
-            >
-              1 Overdue (API Approval)
-            </span>
+            {hasActiveBlocker ? (
+              <button
+                onClick={() => {
+                  setSelectedCardId('card-api-approval');
+                  playHaptic('click');
+                }}
+                style={{
+                  fontSize: '0.74rem',
+                  fontFamily: 'var(--font-mono)',
+                  fontWeight: 700,
+                  color: '#ef4444',
+                  background: 'rgba(239, 68, 68, 0.12)',
+                  border: '1px solid rgba(239, 68, 68, 0.25)',
+                  padding: '0.2rem 0.55rem',
+                  borderRadius: '999px',
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '0.35rem',
+                  cursor: 'pointer',
+                }}
+                title="Click to inspect blocker details"
+              >
+                <i className="bi bi-exclamation-octagon-fill" style={{ fontSize: '0.7rem' }}></i>
+                <span>Release at Risk · Bank approval overdue (blocks testing)</span>
+              </button>
+            ) : (
+              <span
+                style={{
+                  fontSize: '0.74rem',
+                  fontFamily: 'var(--font-mono)',
+                  fontWeight: 700,
+                  color: 'var(--moss)',
+                  background: 'rgba(45, 90, 63, 0.12)',
+                  border: '1px solid rgba(45, 90, 63, 0.25)',
+                  padding: '0.2rem 0.55rem',
+                  borderRadius: '999px',
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '0.35rem',
+                }}
+              >
+                <i className="bi bi-check-circle-fill" style={{ fontSize: '0.7rem' }}></i>
+                <span>Release on Track · All Gateways Verified</span>
+              </span>
+            )}
 
             <span style={{ color: 'var(--border)' }}>·</span>
 
             {/* Decision Pill */}
-            <span
+            <button
+              onClick={() => {
+                setSelectedCardId('card-guest-checkout');
+                playHaptic('click');
+              }}
               style={{
                 fontSize: '0.74rem',
-                color: 'var(--ink-soft)',
+                color: 'var(--ink)',
+                background: 'transparent',
+                border: 'none',
+                cursor: 'pointer',
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '0.35rem',
+                padding: 0,
               }}
+              title="Click to view Decision Trail in task drawer"
             >
-              ✦ 1 decision attached
-            </span>
+              <i className="bi bi-check2-circle" style={{ color: 'var(--moss)' }}></i>
+              <span>
+                Decision:{' '}
+                <strong style={{ textDecoration: 'underline', textUnderlineOffset: '2px' }}>
+                  Allow checkout without account
+                </strong>
+              </span>
+            </button>
           </div>
 
           {/* Right: Honest Sprint Progress (Not fake velocity!) */}
@@ -875,6 +1009,15 @@ export default function Board() {
         </div>
       </div>
 
+      {/* ── Signature Visual: Interactive Release Risk Path ── */}
+      <RiskPath
+        cards={cards}
+        onSelectCard={(card) => setSelectedCardId(card.id)}
+        onResolveBlocker={handleResolveBlocker}
+        onResetScenario={handleResetScenario}
+        isResolving={isResolvingBlocker}
+      />
+
       {/* Active Priority Filter Indicator */}
       {activeFilter && (
         <div
@@ -913,11 +1056,10 @@ export default function Board() {
               alignItems: 'center',
               justifyContent: 'center',
               cursor: 'pointer',
-              fontSize: '0.7rem',
-              fontWeight: 700,
+              fontSize: '0.75rem',
             }}
           >
-            ✕
+            <i className="bi bi-x"></i>
           </button>
         </div>
       )}
@@ -996,9 +1138,17 @@ export default function Board() {
             transition: 'all 0.15s ease',
             boxShadow: 'var(--shadow-sm)',
             flexShrink: 0,
+            display: 'inline-flex',
+            alignItems: 'center',
+            gap: '0.35rem',
           }}
         >
-          {creating ? 'Adding...' : '+ Add'}
+          {creating ? 'Adding...' : (
+            <>
+              <i className="bi bi-plus-lg"></i>
+              <span>Add</span>
+            </>
+          )}
         </button>
       </form>
 
@@ -1090,6 +1240,15 @@ export default function Board() {
         onSetFilter={setActiveFilter}
         theme={theme}
         onToggleTheme={toggleTheme}
+      />
+
+      {/* Design Engineering Case Study & Trade-offs Drawer */}
+      <CaseStudyDrawer
+        isOpen={isCaseStudyOpen}
+        onClose={() => {
+          setIsCaseStudyOpen(false);
+          playHaptic('click');
+        }}
       />
     </div>
   );

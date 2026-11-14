@@ -68,7 +68,7 @@ export default function CommandPalette({
         category: 'Actions',
         title: 'Create new task...',
         subtitle: 'Add a new card to your sprint backlog',
-        icon: '+',
+        icon: 'bi-plus-lg',
         action: () => {
           onClose();
           onOpenCreateModal();
@@ -79,7 +79,7 @@ export default function CommandPalette({
         category: 'Actions',
         title: currentView === 'board' ? 'Switch to Dense List View' : 'Switch to Spatial Kanban Board',
         subtitle: currentView === 'board' ? 'Linear-style table layout (Key: V)' : 'Column drag-and-drop board (Key: V)',
-        icon: currentView === 'board' ? '☰' : '☷',
+        icon: currentView === 'board' ? 'bi-list-task' : 'bi-kanban',
         action: () => {
           onSwitchView(currentView === 'board' ? 'list' : 'board');
           onClose();
@@ -90,7 +90,7 @@ export default function CommandPalette({
         category: 'Actions',
         title: soundEnabled ? 'Mute Web Audio Haptics' : 'Enable Web Audio Haptics',
         subtitle: 'Synthesized mechanical tactile click feedback',
-        icon: soundEnabled ? '🔇' : '🔊',
+        icon: soundEnabled ? 'bi-volume-mute-fill' : 'bi-volume-up-fill',
         action: () => {
           onToggleSound();
           onClose();
@@ -103,7 +103,7 @@ export default function CommandPalette({
               category: 'Actions' as const,
               title: theme === 'dark' ? 'Switch to Warm Light Theme' : 'Switch to Linear Obsidian Dark Theme',
               subtitle: theme === 'dark' ? 'Classic editorial paper palette' : 'High-density obsidian & hairline borders',
-              icon: theme === 'dark' ? '☀️' : '🌙',
+              icon: theme === 'dark' ? 'bi-sun-fill' : 'bi-moon-stars-fill',
               action: () => {
                 onToggleTheme();
                 onClose();
@@ -167,7 +167,7 @@ export default function CommandPalette({
         category: 'Filters',
         title: 'Clear Active Filter',
         subtitle: `Currently filtering by ${activeFilter}`,
-        icon: '✕',
+        icon: 'bi-x-lg',
         action: () => {
           onSetFilter(null);
           onClose();
@@ -200,13 +200,13 @@ export default function CommandPalette({
       if (!q || matchTitle || matchDesc || matchId || matchPriority || matchStatus) {
         const priorityKey = (card.priority || 'medium') as Priority;
         const priorityInfo = PRIORITY_BADGES[priorityKey] || PRIORITY_BADGES.medium;
-        const statusGlyph = card.status === 'done' ? '● Done' : card.status === 'in_progress' ? '◐ In Progress' : '○ To Do';
+        const statusLabel = card.status === 'done' ? 'Done' : card.status === 'in_progress' ? 'In Progress' : 'To Do';
 
         result.push({
           id: `task-${card.id}`,
           category: 'Tasks',
           title: card.title,
-          subtitle: `#TF-${shortId} · ${statusGlyph}`,
+          subtitle: `#TF-${shortId} · ${statusLabel}`,
           badge: priorityInfo,
           action: () => {
             onClose();
@@ -301,7 +301,7 @@ export default function CommandPalette({
             background: 'var(--surface)',
           }}
         >
-          <span style={{ fontSize: '1.1rem', color: 'var(--ink-soft)', opacity: 0.8 }}>⌘</span>
+          <i className="bi bi-search" style={{ fontSize: '1rem', color: 'var(--ink-soft)' }}></i>
           <input
             ref={inputRef}
             type="text"
@@ -439,7 +439,7 @@ export default function CommandPalette({
                             flexShrink: 0,
                           }}
                         >
-                          {item.icon}
+                          <i className={`bi ${item.icon}`}></i>
                         </span>
                       )}
 
