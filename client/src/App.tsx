@@ -32,6 +32,8 @@ function AppRoutes() {
           </ProtectedRoute>
         }
       />
+      <Route path="/board" element={<Navigate to="/" replace />} />
+      <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
   );
 }
