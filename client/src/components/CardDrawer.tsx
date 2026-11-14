@@ -16,7 +16,7 @@ const STATUS_OPTIONS: { key: Card['status']; label: string; glyph: string; color
 ];
 
 const PRIORITY_OPTIONS: { key: Priority; label: string; glyph: string; color: string; bg: string }[] = [
-  { key: 'urgent', label: 'Urgent', glyph: '▲', color: '#e5484d', bg: '#ffebee' },
+  { key: 'urgent', label: 'Urgent', glyph: '▲', color: '#e5484d', bg: 'var(--clay-soft)' },
   { key: 'high', label: 'High', glyph: '⎎', color: 'var(--clay)', bg: 'var(--clay-soft)' },
   { key: 'medium', label: 'Medium', glyph: '⎍', color: 'var(--ochre)', bg: 'var(--ochre-soft)' },
   { key: 'low', label: 'Low', glyph: '⎯', color: 'var(--moss)', bg: 'var(--moss-soft)' },

@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import type { FormEvent } from 'react';
 import {
   DndContext,
@@ -10,14 +10,18 @@ import {
 } from '@dnd-kit/core';
 import type { DragStartEvent, DragEndEvent } from '@dnd-kit/core';
 import { useAuth } from '../lib/AuthContext';
+import { useTheme } from '../lib/ThemeContext';
 import { useCards } from '../hooks/useCards';
 import { useSocket } from '../hooks/useSocket';
 import Column from '../components/Column';
+import ListView from '../components/ListView';
 import CardDrawer from '../components/CardDrawer';
+import CommandPalette from '../components/CommandPalette';
+import Logo from '../components/Logo';
 import { CardView } from '../components/SortableCard';
 import { playHaptic, isSoundEnabled, toggleSound } from '../lib/sound';
 import { triggerConfetti } from '../lib/confetti';
-import type { Card } from '../types';
+import type { Card, Priority } from '../types';
 
 const COLUMNS: { key: Card['status']; label: string }[] = [
   { key: 'todo', label: 'To Do' },
@@ -34,6 +38,10 @@ export default function Board() {
   const [selectedCardId, setSelectedCardId] = useState<string | null>(null);
   const [activeCard, setActiveCard] = useState<Card | null>(null);
   const [soundActive, setSoundActive] = useState<boolean>(isSoundEnabled());
+  const [currentView, setCurrentView] = useState<'board' | 'list'>('board');
+  const [isPaletteOpen, setIsPaletteOpen] = useState(false);
+  const [activeFilter, setActiveFilter] = useState<Priority | null>(null);
+  const { theme, toggleTheme } = useTheme();
 
   const selectedCard = cards.find((c) => c.id === selectedCardId) || null;
 
@@ -97,6 +105,50 @@ export default function Board() {
     onCardMoved: handleCardMoved,
     onCardDeleted: handleCardDeleted,
   });
+
+  // Global Keyboard Shortcuts (⌘K, /, V, N, Esc)
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      const target = e.target as HTMLElement;
+      const isInput = target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.isContentEditable;
+
+      // ⌘K or Ctrl+K -> Command Palette
+      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') {
+        e.preventDefault();
+        setIsPaletteOpen((prev) => !prev);
+        playHaptic('click');
+        return;
+      }
+
+      if (isInput) return;
+
+      // '/' opens Command Palette
+      if (e.key === '/') {
+        e.preventDefault();
+        setIsPaletteOpen(true);
+        playHaptic('click');
+      }
+      // 'v' or 'V' toggles between board and list view
+      else if (e.key.toLowerCase() === 'v') {
+        e.preventDefault();
+        setCurrentView((prev) => {
+          const next = prev === 'board' ? 'list' : 'board';
+          playHaptic('pickup');
+          return next;
+        });
+      }
+      // 'n' focuses quick add input
+      else if (e.key.toLowerCase() === 'n') {
+        e.preventDefault();
+        const input = document.getElementById('quick-add-input') as HTMLInputElement;
+        input?.focus();
+        playHaptic('click');
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, []);
 
   const handleCreate = async (e: FormEvent) => {
     e.preventDefault();
@@ -206,6 +258,11 @@ export default function Board() {
     return deleteCard(id);
   };
 
+  // Filtered Cards (activeFilter applied to both views)
+  const filteredCards = activeFilter
+    ? cards.filter((c) => (c.priority || 'medium') === activeFilter)
+    : cards;
+
   // Live Telemetry Calculations
   const totalTasks = cards.length;
   const doneTasks = cards.filter((c) => c.status === 'done').length;
@@ -243,34 +300,8 @@ export default function Board() {
           borderBottom: '1px solid var(--border)',
         }}
       >
-        <div style={{ display: 'flex', alignItems: 'center', gap: '0.85rem' }}>
-          <h1
-            style={{
-              fontFamily: 'var(--font-display)',
-              fontSize: '1.65rem',
-              fontWeight: 600,
-              color: 'var(--ink)',
-              margin: 0,
-              letterSpacing: '-0.02em',
-            }}
-          >
-            TaskFlow{' '}
-            <span
-              style={{
-                fontSize: '0.78rem',
-                fontFamily: 'var(--font-mono)',
-                fontWeight: 600,
-                color: 'var(--moss)',
-                background: 'var(--moss-soft)',
-                padding: '0.15rem 0.5rem',
-                borderRadius: '4px',
-                border: '1px solid rgba(56, 115, 80, 0.2)',
-                letterSpacing: '0.05em',
-              }}
-            >
-              PRO
-            </span>
-          </h1>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+          <Logo size="md" showBadge />
 
           <div
             style={{
@@ -298,15 +329,105 @@ export default function Board() {
           </div>
         </div>
 
-        {/* Right Header Controls: Audio Haptics Toggle, Live Peers, User & Logout */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+        {/* Right Header Controls: Command HUD trigger, View Switcher, Haptics Toggle, Live Peers, User */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+          {/* Raycast-style Command Palette Button */}
+          <button
+            onClick={() => {
+              setIsPaletteOpen(true);
+              playHaptic('click');
+            }}
+            title="Open Command Palette (⌘K or /)"
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '0.45rem',
+              fontSize: '0.76rem',
+              fontFamily: 'var(--font-mono)',
+              color: 'var(--ink)',
+              background: 'var(--paper)',
+              border: '1px solid var(--border)',
+              borderRadius: 'var(--radius-sm)',
+              padding: '0.35rem 0.65rem',
+              cursor: 'pointer',
+              boxShadow: 'var(--shadow-sm)',
+              transition: 'all 0.15s ease',
+            }}
+          >
+            <span style={{ fontWeight: 700 }}>⌘K</span>
+            <span style={{ color: 'var(--ink-soft)' }}>Commands</span>
+          </button>
+
+          {/* Dual View Segmented Switcher (Board ⟷ List) */}
+          <div
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              background: 'var(--paper)',
+              border: '1px solid var(--border)',
+              borderRadius: 'var(--radius-sm)',
+              padding: '0.15rem',
+              gap: '0.15rem',
+            }}
+            title="Toggle View (Key: V)"
+          >
+            <button
+              onClick={() => {
+                setCurrentView('board');
+                playHaptic('click');
+              }}
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '0.3rem',
+                fontSize: '0.74rem',
+                fontWeight: currentView === 'board' ? 600 : 500,
+                color: currentView === 'board' ? 'var(--ink)' : 'var(--ink-soft)',
+                background: currentView === 'board' ? 'var(--surface)' : 'transparent',
+                border: 'none',
+                borderRadius: '4px',
+                padding: '0.3rem 0.65rem',
+                cursor: 'pointer',
+                boxShadow: currentView === 'board' ? '0 1px 2px rgba(0,0,0,0.06)' : 'none',
+                transition: 'all 0.12s ease',
+              }}
+            >
+              <span>☷</span>
+              <span>Board</span>
+            </button>
+            <button
+              onClick={() => {
+                setCurrentView('list');
+                playHaptic('click');
+              }}
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '0.3rem',
+                fontSize: '0.74rem',
+                fontWeight: currentView === 'list' ? 600 : 500,
+                color: currentView === 'list' ? 'var(--ink)' : 'var(--ink-soft)',
+                background: currentView === 'list' ? 'var(--surface)' : 'transparent',
+                border: 'none',
+                borderRadius: '4px',
+                padding: '0.3rem 0.65rem',
+                cursor: 'pointer',
+                boxShadow: currentView === 'list' ? '0 1px 2px rgba(0,0,0,0.06)' : 'none',
+                transition: 'all 0.12s ease',
+              }}
+            >
+              <span>☰</span>
+              <span>List</span>
+            </button>
+          </div>
+
           {/* Audio Haptics Synthesizer Toggle */}
           <button
             onClick={() => {
               const next = toggleSound();
               setSoundActive(next);
             }}
-            title={soundActive ? 'Synthesized Audio Haptics ON (Click to mute)' : 'Synthesized Audio Haptics MUTED (Click to enable)'}
+            title={soundActive ? 'Audio Haptics ON (Click to mute)' : 'Audio Haptics MUTED (Click to enable)'}
             style={{
               display: 'inline-flex',
               alignItems: 'center',
@@ -324,6 +445,29 @@ export default function Board() {
           >
             <span>{soundActive ? '🔊' : '🔇'}</span>
             <span>Haptics {soundActive ? 'ON' : 'OFF'}</span>
+          </button>
+
+          {/* Obsidian Theme Switcher */}
+          <button
+            onClick={toggleTheme}
+            title={`Switch to ${theme === 'dark' ? 'Warm Light' : 'Linear Obsidian Dark'} mode`}
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '0.35rem',
+              fontSize: '0.75rem',
+              fontFamily: 'var(--font-mono)',
+              color: 'var(--ink)',
+              background: 'var(--paper)',
+              border: '1px solid var(--border)',
+              borderRadius: 'var(--radius-sm)',
+              padding: '0.35rem 0.65rem',
+              cursor: 'pointer',
+              transition: 'all 0.15s ease',
+            }}
+          >
+            <span>{theme === 'dark' ? '☀️' : '🌙'}</span>
+            <span>{theme === 'dark' ? 'Light' : 'Obsidian'}</span>
           </button>
 
           {/* Simulated Multiplayer Presence Ring */}
@@ -495,6 +639,53 @@ export default function Board() {
         </div>
       </div>
 
+      {/* Active Priority Filter Indicator */}
+      {activeFilter && (
+        <div
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '0.65rem',
+            marginBottom: '1.25rem',
+            padding: '0.45rem 0.85rem',
+            background: 'var(--surface)',
+            border: '1px solid var(--border)',
+            borderRadius: 'var(--radius-sm)',
+            fontSize: '0.78rem',
+            width: 'fit-content',
+            animation: 'paletteIn 0.15s ease-out',
+          }}
+        >
+          <span style={{ color: 'var(--ink-soft)' }}>Active Filter:</span>
+          <span style={{ fontWeight: 600, color: 'var(--ink)', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
+            Priority: {activeFilter}
+          </span>
+          <button
+            onClick={() => {
+              setActiveFilter(null);
+              playHaptic('click');
+            }}
+            title="Clear filter"
+            style={{
+              border: 'none',
+              background: 'var(--paper)',
+              color: 'var(--ink-soft)',
+              borderRadius: '50%',
+              width: '18px',
+              height: '18px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              cursor: 'pointer',
+              fontSize: '0.7rem',
+              fontWeight: 700,
+            }}
+          >
+            ✕
+          </button>
+        </div>
+      )}
+
       {/* Global Quick Add Bar */}
       <form
         onSubmit={handleCreate}
@@ -506,10 +697,11 @@ export default function Board() {
       >
         <div style={{ position: 'relative', flex: 1 }}>
           <input
+            id="quick-add-input"
             type="text"
             value={newTitle}
             onChange={(e) => setNewTitle(e.target.value)}
-            placeholder="Quick capture a new task... (press Enter to commit to To Do)"
+            placeholder="Quick capture a new task... (press Enter to commit to To Do, or N to focus)"
             style={{
               width: '100%',
               padding: '0.75rem 1.15rem',
@@ -549,42 +741,54 @@ export default function Board() {
         </button>
       </form>
 
-      {/* 3-Column Kanban Grid with Tactile Drag Overlay */}
-      <DndContext
-        sensors={sensors}
-        collisionDetection={closestCorners}
-        onDragStart={handleDragStart}
-        onDragCancel={handleDragCancel}
-        onDragEnd={handleDragEnd}
-      >
-        <div style={{ display: 'flex', gap: '1.5rem', alignItems: 'flex-start' }}>
-          {COLUMNS.map((column) => {
-            const columnCards = cards
-              .filter((card) => card.status === column.key)
-              .sort((a, b) => a.position - b.position);
+      {/* Dual Views: Spatial Kanban Grid OR Dense Linear List */}
+      {currentView === 'board' ? (
+        <DndContext
+          sensors={sensors}
+          collisionDetection={closestCorners}
+          onDragStart={handleDragStart}
+          onDragCancel={handleDragCancel}
+          onDragEnd={handleDragEnd}
+        >
+          <div style={{ display: 'flex', gap: '1.5rem', alignItems: 'flex-start' }}>
+            {COLUMNS.map((column) => {
+              const columnCards = filteredCards
+                .filter((card) => card.status === column.key)
+                .sort((a, b) => a.position - b.position);
 
-            return (
-              <Column
-                key={column.key}
-                id={column.key}
-                label={column.label}
-                cards={columnCards}
-                pulsingIds={pulsingIds}
-                onSelectCard={(card) => {
-                  setSelectedCardId(card.id);
-                  playHaptic('click');
-                }}
-                onAddCard={handleInlineCreate}
-              />
-            );
-          })}
-        </div>
+              return (
+                <Column
+                  key={column.key}
+                  id={column.key}
+                  label={column.label}
+                  cards={columnCards}
+                  pulsingIds={pulsingIds}
+                  onSelectCard={(card) => {
+                    setSelectedCardId(card.id);
+                    playHaptic('click');
+                  }}
+                  onAddCard={handleInlineCreate}
+                />
+              );
+            })}
+          </div>
 
-        {/* Smooth Dynamic Drag Overlay */}
-        <DragOverlay dropAnimation={{ duration: 180, easing: 'cubic-bezier(0.18, 0.67, 0.6, 1.22)' }}>
-          {activeCard ? <CardView card={activeCard} isOverlay /> : null}
-        </DragOverlay>
-      </DndContext>
+          {/* Smooth Dynamic Drag Overlay */}
+          <DragOverlay dropAnimation={{ duration: 180, easing: 'cubic-bezier(0.18, 0.67, 0.6, 1.22)' }}>
+            {activeCard ? <CardView card={activeCard} isOverlay /> : null}
+          </DragOverlay>
+        </DndContext>
+      ) : (
+        <ListView
+          cards={filteredCards}
+          onSelectCard={(card) => {
+            setSelectedCardId(card.id);
+            playHaptic('click');
+          }}
+          onUpdateCard={handleUpdateFromDrawer}
+          onAddCard={handleInlineCreate}
+        />
+      )}
 
       {/* Linear-Style Slide-Over Detail Drawer */}
       <CardDrawer
@@ -596,6 +800,35 @@ export default function Board() {
         }}
         onUpdate={handleUpdateFromDrawer}
         onDelete={handleDeleteFromDrawer}
+      />
+
+      {/* Raycast-Style Spotlight Command Palette */}
+      <CommandPalette
+        isOpen={isPaletteOpen}
+        onClose={() => setIsPaletteOpen(false)}
+        cards={cards}
+        currentView={currentView}
+        onSwitchView={(v) => {
+          setCurrentView(v);
+          playHaptic('click');
+        }}
+        onSelectCard={(card) => {
+          setSelectedCardId(card.id);
+          playHaptic('click');
+        }}
+        onOpenCreateModal={() => {
+          const input = document.getElementById('quick-add-input') as HTMLInputElement;
+          input?.focus();
+        }}
+        onToggleSound={() => {
+          const next = toggleSound();
+          setSoundActive(next);
+        }}
+        soundEnabled={soundActive}
+        activeFilter={activeFilter}
+        onSetFilter={setActiveFilter}
+        theme={theme}
+        onToggleTheme={toggleTheme}
       />
     </div>
   );

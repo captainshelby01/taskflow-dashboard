@@ -9,7 +9,7 @@ export const STATUS_COLOR: Record<Card['status'], string> = {
 };
 
 export const PRIORITY_BADGES: Record<Priority, { label: string; glyph: string; color: string; bg: string }> = {
-  urgent: { label: 'Urgent', glyph: '▲', color: '#e5484d', bg: '#ffebee' },
+  urgent: { label: 'Urgent', glyph: '▲', color: '#e5484d', bg: 'var(--clay-soft)' },
   high: { label: 'High', glyph: '⎎', color: 'var(--clay)', bg: 'var(--clay-soft)' },
   medium: { label: 'Med', glyph: '⎍', color: 'var(--ochre)', bg: 'var(--ochre-soft)' },
   low: { label: 'Low', glyph: '⎯', color: 'var(--moss)', bg: 'var(--moss-soft)' },

@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500;600&display=swap');
 
 :root {
   --ink: #1a1d29;
@@ -14,8 +14,8 @@
   --ochre: #d4a24c;
   --ochre-soft: #f8eedb;
 
-  --font-display: 'Fraunces', serif;
-  --font-body: 'Inter', sans-serif;
+  --font-display: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-body: 'Plus Jakarta Sans', 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
   --font-mono: 'JetBrains Mono', monospace;
 
   --radius-sm: 6px;
@@ -25,6 +25,25 @@
   --shadow-sm: 0 1px 2px rgba(26, 29, 41, 0.06);
   --shadow-md: 0 4px 12px rgba(26, 29, 41, 0.08);
   --shadow-lg: 0 12px 32px rgba(26, 29, 41, 0.16);
+}
+
+[data-theme='dark'] {
+  --ink: #f0f2f5;
+  --ink-soft: #8e93a6;
+  --paper: #08090c;
+  --surface: #111318;
+  --border: #222530;
+
+  --moss: #4ade80;
+  --moss-soft: rgba(74, 222, 128, 0.12);
+  --clay: #f87171;
+  --clay-soft: rgba(248, 113, 113, 0.14);
+  --ochre: #fbbf24;
+  --ochre-soft: rgba(251, 191, 36, 0.14);
+
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.6);
+  --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.75);
+  --shadow-lg: 0 16px 40px rgba(0, 0, 0, 0.9);
 }
 
 * {
@@ -38,6 +57,11 @@ body {
   background-color: var(--paper);
   color: var(--ink);
   -webkit-font-smoothing: antialiased;
+  transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+[data-theme='dark'] body {
+  background-image: radial-gradient(ellipse 80% 50% at 50% -20%, rgba(99, 102, 241, 0.07), transparent);
 }
 
 #root {
@@ -73,6 +97,17 @@ input {
   }
   to {
     transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+@keyframes paletteIn {
+  from {
+    transform: scale(0.97) translateY(-8px);
+    opacity: 0;
+  }
+  to {
+    transform: scale(1) translateY(0);
     opacity: 1;
   }
 }
