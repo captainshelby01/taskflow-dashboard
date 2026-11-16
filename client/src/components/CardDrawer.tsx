@@ -142,6 +142,7 @@ export default function CardDrawer({ card, isOpen, onClose, onUpdate, onDelete }
       >
         {/* Header Bar */}
         <div
+          className="drawer-header-bar"
           style={{
             padding: '1.25rem 1.75rem',
             borderBottom: '1px solid var(--border)',
@@ -204,6 +205,7 @@ export default function CardDrawer({ card, isOpen, onClose, onUpdate, onDelete }
               <i className="bi bi-x-lg" style={{ fontSize: '0.72rem' }}></i>
               <span>Close</span>
               <kbd
+                className="mobile-hide"
                 style={{
                   fontFamily: 'var(--font-mono)',
                   fontSize: '0.7rem',
@@ -274,12 +276,13 @@ export default function CardDrawer({ card, isOpen, onClose, onUpdate, onDelete }
 
           {/* Properties Panel (Tactile Instrument Grid) */}
           <div
+            className="drawer-meta-grid"
             style={{
               display: 'grid',
-              gridTemplateColumns: 'repeat(2, 1fr)',
-              gap: '1rem',
+              gridTemplateColumns: 'repeat(auto-fit, minmax(130px, 1fr))',
+              gap: '0.75rem',
               background: 'var(--paper)',
-              padding: '1.15rem',
+              padding: '1rem',
               borderRadius: 'var(--radius-md)',
               border: '1px solid var(--border)',
             }}
@@ -685,6 +688,7 @@ export default function CardDrawer({ card, isOpen, onClose, onUpdate, onDelete }
 
         {/* Pinned Footer Action Bar */}
         <div
+          className="drawer-footer-actions"
           style={{
             padding: '1.15rem 1.75rem',
             borderTop: '1px solid var(--border)',
@@ -692,6 +696,9 @@ export default function CardDrawer({ card, isOpen, onClose, onUpdate, onDelete }
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'space-between',
+            flexWrap: 'wrap',
+            gap: '0.75rem',
+            boxSizing: 'border-box',
           }}
         >
           {/* Delete Action */}
@@ -758,7 +765,7 @@ export default function CardDrawer({ card, isOpen, onClose, onUpdate, onDelete }
           </div>
 
           {/* Save Action */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+          <div className="drawer-save-actions" style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', flexWrap: 'wrap' }}>
             <button
               type="button"
               onClick={onClose}
@@ -802,6 +809,7 @@ export default function CardDrawer({ card, isOpen, onClose, onUpdate, onDelete }
                 </>
               )}
               <kbd
+                className="mobile-hide"
                 style={{
                   fontFamily: 'var(--font-mono)',
                   fontSize: '0.7rem',

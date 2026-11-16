@@ -158,6 +158,8 @@ html, body {
 .login-split-container > div {
   min-width: 0;
   max-width: 100%;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 @media (max-width: 960px) {
@@ -165,6 +167,13 @@ html, body {
     grid-template-columns: minmax(0, 1fr);
     gap: 2rem;
     padding: 1.5rem 1rem 3rem 1rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .login-split-container {
+    padding: 1rem 0.75rem 2.5rem 0.75rem !important;
+    gap: 1.5rem !important;
   }
 }
 
@@ -469,6 +478,46 @@ html, body {
     left: 0 !important;
     right: 0 !important;
     border-left: none !important;
+    box-sizing: border-box !important;
+  }
+}
+
+@media (max-width: 480px) {
+  .drawer-header-bar {
+    padding: 0.85rem 1rem !important;
+  }
+  .drawer-content-body {
+    padding: 1rem 0.85rem !important;
+    gap: 1rem !important;
+  }
+  .drawer-meta-grid {
+    grid-template-columns: 1fr !important;
+    padding: 0.75rem !important;
+    gap: 0.5rem !important;
+  }
+  .drawer-footer-actions {
+    flex-direction: column-reverse !important;
+    align-items: stretch !important;
+    padding: 0.75rem 0.85rem !important;
+    gap: 0.65rem !important;
+  }
+  .drawer-footer-actions > div {
+    width: 100% !important;
+    display: flex !important;
+  }
+  .drawer-save-actions {
+    width: 100% !important;
+    display: flex !important;
+    gap: 0.5rem !important;
+  }
+  .drawer-save-actions button {
+    flex: 1 !important;
+    justify-content: center !important;
+    padding: 0.5rem 0.65rem !important;
+    font-size: 0.82rem !important;
+  }
+  .drawer-footer-actions button {
+    justify-content: center !important;
   }
 }
 

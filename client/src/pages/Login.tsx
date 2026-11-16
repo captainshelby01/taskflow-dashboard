@@ -453,6 +453,7 @@ export default function Login() {
                   textOverflow: 'ellipsis',
                   whiteSpace: 'nowrap',
                   padding: '0 0.5rem',
+                  marginLeft: '0.35rem',
                 }}
               >
                 Checkout Redesign v2.4 — Release Risk Map
@@ -524,6 +525,8 @@ export default function Login() {
                       borderLeft: '3px solid #ef4444',
                       borderRadius: 'var(--radius-sm)',
                       padding: '0.6rem 0.75rem',
+                      minWidth: 0,
+                      wordBreak: 'break-word',
                     }}
                   >
                     <span style={{ fontSize: '0.65rem', fontFamily: 'var(--font-mono)', color: '#ef4444', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '0.3rem' }}>
@@ -556,6 +559,8 @@ export default function Login() {
                       borderLeft: '3px solid #f59e0b',
                       borderRadius: 'var(--radius-sm)',
                       padding: '0.6rem 0.75rem',
+                      minWidth: 0,
+                      wordBreak: 'break-word',
                     }}
                   >
                     <span style={{ fontSize: '0.65rem', fontFamily: 'var(--font-mono)', color: '#f59e0b', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '0.3rem' }}>
@@ -605,6 +610,7 @@ export default function Login() {
                     display: 'flex',
                     alignItems: 'baseline',
                     gap: '0.35rem',
+                    flexWrap: 'wrap',
                   }}
                 >
                   <strong style={{ color: 'var(--moss)', display: 'inline-flex', alignItems: 'center', gap: '0.25rem' }}>
@@ -623,12 +629,12 @@ export default function Login() {
                 onClick={handleExploreDemo}
                 style={{
                   width: '100%',
-                  padding: '0.75rem 1rem',
+                  padding: '0.75rem 0.85rem',
                   borderRadius: 'var(--radius-sm)',
                   border: '1px solid var(--border)',
                   background: 'var(--paper)',
                   color: 'var(--ink)',
-                  fontSize: '0.84rem',
+                  fontSize: '0.82rem',
                   fontWeight: 600,
                   cursor: 'pointer',
                   display: 'flex',
@@ -636,6 +642,10 @@ export default function Login() {
                   justifyContent: 'center',
                   gap: '0.45rem',
                   transition: 'all 0.15s ease',
+                  boxSizing: 'border-box',
+                  whiteSpace: 'normal',
+                  textAlign: 'center',
+                  lineHeight: 1.35,
                 }}
                 onMouseEnter={(e) => {
                   e.currentTarget.style.borderColor = 'var(--moss)';

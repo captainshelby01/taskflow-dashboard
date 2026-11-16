@@ -46,6 +46,7 @@ export default function CaseStudyDrawer({ isOpen, onClose }: CaseStudyDrawerProp
       >
         {/* Header */}
         <div
+          className="drawer-header-bar"
           style={{
             padding: '1.25rem 1.75rem',
             borderBottom: '1px solid var(--border)',
@@ -103,6 +104,7 @@ export default function CaseStudyDrawer({ isOpen, onClose }: CaseStudyDrawerProp
             <i className="bi bi-x-lg" style={{ fontSize: '0.72rem' }}></i>
             <span>Close</span>
             <kbd
+              className="mobile-hide"
               style={{
                 fontFamily: 'var(--font-mono)',
                 fontSize: '0.7rem',
@@ -119,6 +121,7 @@ export default function CaseStudyDrawer({ isOpen, onClose }: CaseStudyDrawerProp
 
         {/* Content Body */}
         <div
+          className="drawer-content-body"
           style={{
             flex: 1,
             overflowY: 'auto',
@@ -134,13 +137,14 @@ export default function CaseStudyDrawer({ isOpen, onClose }: CaseStudyDrawerProp
         >
           {/* Metadata pill */}
           <div
+            className="drawer-meta-grid"
             style={{
               background: 'var(--paper)',
               border: '1px solid var(--border)',
               borderRadius: 'var(--radius-sm)',
               padding: '0.75rem 1rem',
               display: 'grid',
-              gridTemplateColumns: 'repeat(2, 1fr)',
+              gridTemplateColumns: 'repeat(auto-fit, minmax(130px, 1fr))',
               gap: '0.5rem',
               fontSize: '0.78rem',
             }}
