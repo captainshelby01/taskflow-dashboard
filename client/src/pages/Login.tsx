@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import type { FormEvent } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { api } from '../lib/api';
@@ -19,7 +19,18 @@ export default function Login() {
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
   const { login } = useAuth();
-  const { theme, toggleTheme } = useTheme();
+  const { theme, toggleTheme, setTheme } = useTheme();
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const themeParam = params.get('theme');
+    if (themeParam === 'light' || themeParam === 'dark') {
+      setTheme(themeParam);
+    }
+    if (params.get('demo') === '1') {
+      handleLoginSubmit('demo@taskflow.dev', 'password123');
+    }
+  }, []);
 
   const handleLoginSubmit = async (loginEmail: string, loginPass: string) => {
     setError('');
