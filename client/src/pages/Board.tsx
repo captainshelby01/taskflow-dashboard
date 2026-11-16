@@ -74,24 +74,42 @@ export default function Board() {
   const [isPaletteOpen, setIsPaletteOpen] = useState(false);
   const [activeFilter, setActiveFilter] = useState<Priority | null>(null);
   const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
+  const [isWorkspaceMenuOpen, setIsWorkspaceMenuOpen] = useState(false);
+  const [isTeamMenuOpen, setIsTeamMenuOpen] = useState(false);
   const [isCaseStudyOpen, setIsCaseStudyOpen] = useState(false);
   const [isResolvingBlocker, setIsResolvingBlocker] = useState(false);
   const [activeMobileColumn, setActiveMobileColumn] = useState<Card['status']>('todo');
+  const [toasts, setToasts] = useState<Array<{ id: string; text: string; type?: 'success' | 'info' | 'warning'; icon?: string }>>([]);
+
   const profileMenuRef = useRef<HTMLDivElement>(null);
+  const workspaceMenuRef = useRef<HTMLDivElement>(null);
+  const teamMenuRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const { theme, toggleTheme } = useTheme();
+
+  const showToast = useCallback((text: string, type: 'success' | 'info' | 'warning' = 'info', icon?: string) => {
+    const id = Math.random().toString(36).slice(2, 9);
+    setToasts((prev) => [...prev.slice(-2), { id, text, type, icon }]);
+    setTimeout(() => {
+      setToasts((prev) => prev.filter((t) => t.id !== id));
+    }, 3200);
+  }, []);
 
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
       if (profileMenuRef.current && !profileMenuRef.current.contains(e.target as Node)) {
         setIsProfileMenuOpen(false);
       }
+      if (workspaceMenuRef.current && !workspaceMenuRef.current.contains(e.target as Node)) {
+        setIsWorkspaceMenuOpen(false);
+      }
+      if (teamMenuRef.current && !teamMenuRef.current.contains(e.target as Node)) {
+        setIsTeamMenuOpen(false);
+      }
     };
-    if (isProfileMenuOpen) {
-      document.addEventListener('mousedown', handleClickOutside);
-      return () => document.removeEventListener('mousedown', handleClickOutside);
-    }
-  }, [isProfileMenuOpen]);
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
 
   const selectedCard = cards.find((c) => c.id === selectedCardId) || null;
 
@@ -120,13 +138,15 @@ export default function Board() {
       if (newStatus === 'done' && card.status !== 'done') {
         playHaptic('complete');
         triggerConfetti();
+        showToast('Task completed! Moved to Done 🎉', 'success', 'bi-check-circle-fill');
       } else {
         playHaptic('drop');
+        showToast(`Moved to ${COLUMNS.find((c) => c.key === newStatus)?.label || newStatus}`, 'info', 'bi-arrow-left-right');
       }
 
       moveCard(cardId, newStatus, newPos);
     },
-    [cards, moveCard]
+    [cards, moveCard, showToast]
   );
 
   const triggerPulse = useCallback((id: string) => {
@@ -237,7 +257,10 @@ export default function Board() {
       const card = await createCard(newTitle.trim());
       setNewTitle('');
       playHaptic('pickup');
-      if (card) triggerPulse(card.id);
+      if (card) {
+        triggerPulse(card.id);
+        showToast('Task added to To Do', 'success', 'bi-plus-circle-fill');
+      }
     } catch (err) {
       console.error('Failed to create card:', err);
     } finally {
@@ -250,9 +273,10 @@ export default function Board() {
       const card = await createCard(title, status);
       if (card) {
         triggerPulse(card.id);
+        showToast(`Task created in ${COLUMNS.find((c) => c.key === status)?.label || status}`, 'success', 'bi-plus-circle-fill');
       }
     },
-    [createCard, triggerPulse]
+    [createCard, triggerPulse, showToast]
   );
 
   const handleDragStart = (event: DragStartEvent) => {
@@ -289,8 +313,10 @@ export default function Board() {
       playHaptic('complete');
       const mouseEv = event.activatorEvent as MouseEvent;
       triggerConfetti(mouseEv?.clientX, mouseEv?.clientY);
+      showToast('Task completed! Moved to Done 🎉', 'success', 'bi-check-circle-fill');
     } else {
       playHaptic('drop');
+      showToast(`Moved to ${COLUMNS.find((c) => c.key === newStatus)?.label || newStatus}`, 'info', 'bi-arrow-left-right');
     }
 
     const cardsInTargetColumn = cards
@@ -329,14 +355,17 @@ export default function Board() {
     if (updates.status === 'done' && selectedCard?.status !== 'done') {
       playHaptic('complete');
       triggerConfetti();
+      showToast('Task completed! Moved to Done 🎉', 'success', 'bi-check-circle-fill');
     } else {
       playHaptic('click');
+      showToast('Task changes saved', 'success', 'bi-check2');
     }
     return updateCard(id, updates);
   };
 
   const handleDeleteFromDrawer = async (id: string) => {
     playHaptic('delete');
+    showToast('Task removed from workspace', 'warning', 'bi-trash3');
     return deleteCard(id);
   };
 
@@ -361,6 +390,7 @@ export default function Board() {
       }
       playHaptic('complete');
       triggerConfetti();
+      showToast('Release blocker cleared · All gateways verified', 'success', 'bi-shield-check');
     } catch (err) {
       console.error('Failed to resolve blocker:', err);
     } finally {
@@ -388,6 +418,7 @@ export default function Board() {
         });
       }
       playHaptic('pickup');
+      showToast('Simulation reset: Bank approval is blocking checkout', 'warning', 'bi-exclamation-octagon-fill');
     } catch (err) {
       console.error('Failed to reset scenario:', err);
     } finally {
@@ -437,30 +468,145 @@ export default function Board() {
           <Logo size="sm" showBadge={false} />
           <span className="workspace-slash-separator" style={{ color: 'var(--border)', fontSize: '0.9rem', fontWeight: 300, userSelect: 'none' }}>/</span>
 
-          <div
-            className="workspace-selector-btn"
-            style={{
-              display: 'inline-flex',
-              alignItems: 'center',
-              gap: '0.4rem',
-              height: '34px',
-              padding: '0 0.65rem',
-              borderRadius: 'var(--radius-sm)',
-              background: 'var(--surface)',
-              border: '1px solid var(--border)',
-              fontSize: '0.82rem',
-              fontWeight: 600,
-              color: 'var(--ink)',
-              cursor: 'pointer',
-              whiteSpace: 'nowrap',
-              flexShrink: 0,
-              boxShadow: 'var(--shadow-sm)',
-            }}
-            title="Current Workspace and Project"
-          >
-            <span className="workspace-org-label" style={{ color: 'var(--ink-soft)', fontWeight: 400 }}>Acme Corp /</span>
-            <span>Checkout Redesign</span>
-            <span style={{ fontSize: '0.65rem', color: 'var(--ink-soft)', marginLeft: '0.15rem' }}>▾</span>
+          {/* Workspace Dropdown */}
+          <div ref={workspaceMenuRef} style={{ position: 'relative' }}>
+            <button
+              type="button"
+              className="workspace-selector-btn"
+              onClick={() => {
+                setIsWorkspaceMenuOpen(!isWorkspaceMenuOpen);
+                playHaptic('click');
+              }}
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '0.4rem',
+                height: '34px',
+                padding: '0 0.65rem',
+                borderRadius: 'var(--radius-sm)',
+                background: 'var(--surface)',
+                border: '1px solid var(--border)',
+                fontSize: '0.82rem',
+                fontWeight: 600,
+                color: 'var(--ink)',
+                cursor: 'pointer',
+                whiteSpace: 'nowrap',
+                flexShrink: 0,
+                boxShadow: 'var(--shadow-sm)',
+              }}
+              title="Current Workspace and Project"
+            >
+              <span className="workspace-org-label" style={{ color: 'var(--ink-soft)', fontWeight: 400 }}>Acme Corp /</span>
+              <span>Checkout Redesign</span>
+              <span style={{ fontSize: '0.65rem', color: 'var(--ink-soft)', marginLeft: '0.15rem' }}>▾</span>
+            </button>
+
+            {isWorkspaceMenuOpen && (
+              <div
+                style={{
+                  position: 'absolute',
+                  top: 'calc(100% + 6px)',
+                  left: 0,
+                  width: '260px',
+                  background: 'var(--surface)',
+                  border: '1px solid var(--border)',
+                  borderRadius: 'var(--radius-md)',
+                  boxShadow: '0 12px 30px rgba(0,0,0,0.15)',
+                  zIndex: 100,
+                  padding: '0.4rem',
+                  animation: 'paletteIn 0.12s ease-out',
+                }}
+              >
+                <div style={{ padding: '0.4rem 0.65rem', fontSize: '0.72rem', fontFamily: 'var(--font-mono)', color: 'var(--ink-soft)', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
+                  Acme Corp Projects
+                </div>
+                <button
+                  type="button"
+                  onClick={() => {
+                    showToast('Active project: Checkout Redesign v2.4', 'info', 'bi-kanban');
+                    setIsWorkspaceMenuOpen(false);
+                    playHaptic('click');
+                  }}
+                  style={{
+                    width: '100%',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    padding: '0.55rem 0.75rem',
+                    borderRadius: 'var(--radius-sm)',
+                    border: 'none',
+                    background: 'var(--paper)',
+                    color: 'var(--ink)',
+                    fontSize: '0.82rem',
+                    fontWeight: 600,
+                    cursor: 'pointer',
+                    textAlign: 'left',
+                  }}
+                >
+                  <span style={{ display: 'flex', alignItems: 'center', gap: '0.45rem' }}>
+                    <i className="bi bi-check2" style={{ color: 'var(--moss)' }}></i>
+                    Checkout Redesign v2.4
+                  </span>
+                  <span style={{ fontSize: '0.7rem', color: 'var(--ink-soft)', fontFamily: 'var(--font-mono)' }}>8 tasks</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => {
+                    showToast('Preloaded demo focuses on Checkout Redesign v2.4', 'info', 'bi-layers');
+                    setIsWorkspaceMenuOpen(false);
+                    playHaptic('click');
+                  }}
+                  style={{
+                    width: '100%',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    padding: '0.55rem 0.75rem',
+                    borderRadius: 'var(--radius-sm)',
+                    border: 'none',
+                    background: 'transparent',
+                    color: 'var(--ink-soft)',
+                    fontSize: '0.82rem',
+                    cursor: 'pointer',
+                    textAlign: 'left',
+                  }}
+                  onMouseEnter={(e) => (e.currentTarget.style.background = 'var(--paper)')}
+                  onMouseLeave={(e) => (e.currentTarget.style.background = 'transparent')}
+                >
+                  <span>Mobile App Onboarding v1.2</span>
+                  <span style={{ fontSize: '0.7rem', color: 'var(--ink-soft)', fontFamily: 'var(--font-mono)' }}>14 tasks</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => {
+                    showToast('Preloaded demo focuses on Checkout Redesign v2.4', 'info', 'bi-layers');
+                    setIsWorkspaceMenuOpen(false);
+                    playHaptic('click');
+                  }}
+                  style={{
+                    width: '100%',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    padding: '0.55rem 0.75rem',
+                    borderRadius: 'var(--radius-sm)',
+                    border: 'none',
+                    background: 'transparent',
+                    color: 'var(--ink-soft)',
+                    fontSize: '0.82rem',
+                    cursor: 'pointer',
+                    textAlign: 'left',
+                  }}
+                  onMouseEnter={(e) => (e.currentTarget.style.background = 'var(--paper)')}
+                  onMouseLeave={(e) => (e.currentTarget.style.background = 'transparent')}
+                >
+                  <span>SOC2 Security & Audit</span>
+                  <span style={{ fontSize: '0.7rem', color: 'var(--ink-soft)', fontFamily: 'var(--font-mono)' }}>6 tasks</span>
+                </button>
+              </div>
+            )}
           </div>
 
           {/* Subtle Silent Connected Dot */}
@@ -534,64 +680,136 @@ export default function Board() {
         {/* Right: Collaborator Avatars (Human Terminology) + Profile Dropdown Menu */}
         <div className="global-nav-right">
           {/* Collaborator Avatars */}
-          <div
-            className="collaborators-pill"
-            style={{
-              display: 'inline-flex',
-              alignItems: 'center',
-              gap: '0.45rem',
-              height: '34px',
-              padding: '0 0.55rem',
-              borderRadius: 'var(--radius-sm)',
-              background: 'var(--surface)',
-              border: '1px solid var(--border)',
-              fontSize: '0.75rem',
-              color: 'var(--ink-soft)',
-              whiteSpace: 'nowrap',
-              flexShrink: 0,
-            }}
-            title="Sarah K. and Alex M. are collaborating on this release"
-          >
-            <div style={{ display: 'flex', marginLeft: '1px' }}>
-              <span
+          <div ref={teamMenuRef} style={{ position: 'relative' }}>
+            <button
+              type="button"
+              className="collaborators-pill"
+              onClick={() => {
+                setIsTeamMenuOpen(!isTeamMenuOpen);
+                playHaptic('click');
+              }}
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '0.45rem',
+                height: '34px',
+                padding: '0 0.55rem',
+                borderRadius: 'var(--radius-sm)',
+                background: 'var(--surface)',
+                border: '1px solid var(--border)',
+                fontSize: '0.75rem',
+                color: 'var(--ink-soft)',
+                whiteSpace: 'nowrap',
+                flexShrink: 0,
+                cursor: 'pointer',
+              }}
+              title="Collaborators on this release"
+            >
+              <div style={{ display: 'flex', marginLeft: '1px' }}>
+                <span
+                  style={{
+                    width: '20px',
+                    height: '20px',
+                    borderRadius: '50%',
+                    background: '#6366f1',
+                    color: '#fff',
+                    fontSize: '0.62rem',
+                    fontWeight: 700,
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    border: '1.5px solid var(--surface)',
+                  }}
+                  title="Sarah K. (Lead Engineer)"
+                >
+                  SK
+                </span>
+                <span
+                  style={{
+                    width: '20px',
+                    height: '20px',
+                    borderRadius: '50%',
+                    background: '#ec4899',
+                    color: '#fff',
+                    fontSize: '0.62rem',
+                    fontWeight: 700,
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    marginLeft: '-6px',
+                    border: '1.5px solid var(--surface)',
+                  }}
+                  title="Alex M. (Payment Integrations)"
+                >
+                  AM
+                </span>
+              </div>
+              <span className="online-count-label" style={{ fontWeight: 500 }}>2 online</span>
+            </button>
+
+            {isTeamMenuOpen && (
+              <div
                 style={{
-                  width: '20px',
-                  height: '20px',
-                  borderRadius: '50%',
-                  background: '#6366f1',
-                  color: '#fff',
-                  fontSize: '0.62rem',
-                  fontWeight: 700,
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  border: '1.5px solid var(--surface)',
+                  position: 'absolute',
+                  top: 'calc(100% + 6px)',
+                  right: 0,
+                  width: '260px',
+                  background: 'var(--surface)',
+                  border: '1px solid var(--border)',
+                  borderRadius: 'var(--radius-md)',
+                  boxShadow: '0 12px 30px rgba(0,0,0,0.15)',
+                  zIndex: 100,
+                  padding: '0.5rem',
+                  animation: 'paletteIn 0.12s ease-out',
                 }}
-                title="Sarah K. (Lead Engineer)"
               >
-                SK
-              </span>
-              <span
-                style={{
-                  width: '20px',
-                  height: '20px',
-                  borderRadius: '50%',
-                  background: '#ec4899',
-                  color: '#fff',
-                  fontSize: '0.62rem',
-                  fontWeight: 700,
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  marginLeft: '-6px',
-                  border: '1.5px solid var(--surface)',
-                }}
-                title="Alex M. (Payment Integrations)"
-              >
-                AM
-              </span>
-            </div>
-            <span className="online-count-label" style={{ fontWeight: 500 }}>2 online</span>
+                <div style={{ padding: '0.35rem 0.6rem', fontSize: '0.72rem', fontFamily: 'var(--font-mono)', color: 'var(--ink-soft)', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
+                  Live Team (3 Active)
+                </div>
+                <div
+                  onClick={() => showToast('Sarah K. (Lead Engineer) · Status: Online', 'info', 'bi-person-badge')}
+                  style={{ display: 'flex', alignItems: 'center', gap: '0.65rem', padding: '0.45rem 0.6rem', borderRadius: 'var(--radius-sm)', cursor: 'pointer' }}
+                  onMouseEnter={(e) => (e.currentTarget.style.background = 'var(--paper)')}
+                  onMouseLeave={(e) => (e.currentTarget.style.background = 'transparent')}
+                >
+                  <span style={{ width: '24px', height: '24px', borderRadius: '50%', background: '#6366f1', color: '#fff', fontSize: '0.7rem', fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>SK</span>
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div style={{ fontSize: '0.8rem', fontWeight: 600, color: 'var(--ink)' }}>Sarah K.</div>
+                    <div style={{ fontSize: '0.7rem', color: 'var(--ink-soft)' }}>Lead Engineer · Active</div>
+                  </div>
+                  <span style={{ width: '7px', height: '7px', borderRadius: '50%', background: '#10b981' }} />
+                </div>
+                <div
+                  onClick={() => showToast('Alex M. (Payment Integrations) · Status: Online', 'info', 'bi-person-badge')}
+                  style={{ display: 'flex', alignItems: 'center', gap: '0.65rem', padding: '0.45rem 0.6rem', borderRadius: 'var(--radius-sm)', cursor: 'pointer' }}
+                  onMouseEnter={(e) => (e.currentTarget.style.background = 'var(--paper)')}
+                  onMouseLeave={(e) => (e.currentTarget.style.background = 'transparent')}
+                >
+                  <span style={{ width: '24px', height: '24px', borderRadius: '50%', background: '#ec4899', color: '#fff', fontSize: '0.7rem', fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>AM</span>
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div style={{ fontSize: '0.8rem', fontWeight: 600, color: 'var(--ink)' }}>Alex M.</div>
+                    <div style={{ fontSize: '0.7rem', color: 'var(--ink-soft)' }}>Integrations · Active</div>
+                  </div>
+                  <span style={{ width: '7px', height: '7px', borderRadius: '50%', background: '#10b981' }} />
+                </div>
+                <div
+                  onClick={() => showToast('You are signed in as demo@taskflow.dev', 'info', 'bi-person-check')}
+                  style={{ display: 'flex', alignItems: 'center', gap: '0.65rem', padding: '0.45rem 0.6rem', borderRadius: 'var(--radius-sm)', cursor: 'pointer' }}
+                  onMouseEnter={(e) => (e.currentTarget.style.background = 'var(--paper)')}
+                  onMouseLeave={(e) => (e.currentTarget.style.background = 'transparent')}
+                >
+                  <span style={{ width: '24px', height: '24px', borderRadius: '50%', background: 'var(--ink)', color: 'var(--surface)', fontSize: '0.7rem', fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>{user?.email?.charAt(0).toUpperCase() || 'D'}</span>
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div style={{ fontSize: '0.8rem', fontWeight: 600, color: 'var(--ink)' }}>You ({user?.email || 'demo@taskflow.dev'})</div>
+                    <div style={{ fontSize: '0.7rem', color: 'var(--ink-soft)' }}>Design Lead · Present</div>
+                  </div>
+                  <span style={{ width: '7px', height: '7px', borderRadius: '50%', background: '#10b981' }} />
+                </div>
+                <div style={{ borderTop: '1px solid var(--border)', marginTop: '0.4rem', paddingTop: '0.4rem', paddingLeft: '0.6rem', fontSize: '0.7rem', color: 'var(--ink-soft)', fontFamily: 'var(--font-mono)' }}>
+                  WebSocket sync: 24ms latency
+                </div>
+              </div>
+            )}
           </div>
 
           {/* Profile & Settings Menu Dropdown */}
@@ -1348,6 +1566,55 @@ export default function Board() {
           playHaptic('click');
         }}
       />
+
+      {/* ── Fixed Toast Notification Rack ── */}
+      <aside
+        aria-live="polite"
+        aria-atomic="true"
+        style={{
+          position: 'fixed',
+          bottom: '1.5rem',
+          right: '1.5rem',
+          zIndex: 1000,
+          display: 'flex',
+          flexDirection: 'column',
+          gap: '0.5rem',
+          maxWidth: 'calc(100vw - 2rem)',
+          pointerEvents: 'none',
+        }}
+      >
+        {toasts.map((toast) => (
+          <div
+            key={toast.id}
+            role="status"
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '0.65rem',
+              padding: '0.65rem 1rem',
+              background: 'var(--ink)',
+              color: 'var(--surface)',
+              borderRadius: 'var(--radius-md)',
+              boxShadow: '0 8px 24px rgba(0,0,0,0.25)',
+              fontSize: '0.82rem',
+              fontWeight: 500,
+              pointerEvents: 'auto',
+              animation: 'slideInRight 0.18s cubic-bezier(0.16, 1, 0.3, 1)',
+              border: '1px solid rgba(255,255,255,0.1)',
+            }}
+          >
+            <i
+              className={`bi ${toast.icon || (toast.type === 'success' ? 'bi-check-circle-fill' : toast.type === 'warning' ? 'bi-exclamation-triangle-fill' : 'bi-info-circle-fill')}`}
+              style={{
+                color: toast.type === 'success' ? '#4ade80' : toast.type === 'warning' ? '#f87171' : '#38bdf8',
+                fontSize: '0.9rem',
+                flexShrink: 0,
+              }}
+            />
+            <span>{toast.text}</span>
+          </div>
+        ))}
+      </aside>
     </div>
   );
 }
