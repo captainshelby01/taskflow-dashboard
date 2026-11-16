@@ -64,18 +64,7 @@ export default function Login() {
       }}
     >
       {/* ── Global Top Bar: Brand, Case Study, Theme Toggle ── */}
-      <header
-        className="login-header-bar"
-        style={{
-          width: '100%',
-          maxWidth: '1240px',
-          margin: '0 auto',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-          borderBottom: '1px solid var(--border)',
-        }}
-      >
+      <header className="login-header-bar">
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.85rem' }}>
           <Logo size="sm" showBadge={false} />
           <span className="mobile-hide" style={{ color: 'var(--border)', fontSize: '0.9rem' }}>/</span>

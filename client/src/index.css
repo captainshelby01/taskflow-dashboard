@@ -142,6 +142,25 @@ html, body {
   }
 }
 
+/* Login Top Navigation Bar */
+.login-header-bar {
+  width: 100%;
+  max-width: 1240px;
+  margin: 0 auto;
+  padding: 1.5rem 2rem 1.25rem 2rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid var(--border);
+  box-sizing: border-box;
+}
+
+@media (max-width: 768px) {
+  .login-header-bar {
+    padding: 1.25rem 1.25rem 1rem 1.25rem;
+  }
+}
+
 /* Login Split Hero Responsive */
 .login-split-container {
   display: grid;
