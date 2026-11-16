@@ -65,11 +65,11 @@ export default function Login() {
     >
       {/* ── Global Top Bar: Brand, Case Study, Theme Toggle ── */}
       <header
+        className="login-header-bar"
         style={{
           width: '100%',
           maxWidth: '1240px',
           margin: '0 auto',
-          padding: '1.25rem 2rem',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'space-between',
@@ -95,6 +95,7 @@ export default function Login() {
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
           <button
             type="button"
+            className="case-study-btn"
             onClick={() => {
               playHaptic('click');
               setIsCaseStudyOpen(true);
@@ -201,7 +202,7 @@ export default function Login() {
           </p>
 
           {/* Primary Call to Action */}
-          <div style={{ maxWidth: '420px', marginBottom: '2rem' }}>
+          <div style={{ maxWidth: '420px', width: '100%', marginBottom: '2rem' }}>
             <button
               type="button"
               onClick={handleExploreDemo}
@@ -257,6 +258,7 @@ export default function Login() {
               paddingTop: '1.5rem',
               borderTop: '1px solid var(--border)',
               maxWidth: '480px',
+              width: '100%',
             }}
           >
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem', fontSize: '0.84rem' }}>
@@ -285,7 +287,7 @@ export default function Login() {
           </div>
 
           {/* Secondary Collapsible Email Form */}
-          <div style={{ marginTop: '2rem', maxWidth: '420px' }}>
+          <div style={{ marginTop: '2rem', maxWidth: '420px', width: '100%' }}>
             <button
               type="button"
               onClick={() => setShowEmailForm(!showEmailForm)}
@@ -436,7 +438,7 @@ export default function Login() {
                 borderBottom: '1px solid var(--border)',
               }}
             >
-              <div style={{ display: 'flex', alignItems: 'center', gap: '0.45rem' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.45rem', flexShrink: 0 }}>
                 <span style={{ width: '10px', height: '10px', borderRadius: '50%', background: '#f87171' }} />
                 <span style={{ width: '10px', height: '10px', borderRadius: '50%', background: '#fbbf24' }} />
                 <span style={{ width: '10px', height: '10px', borderRadius: '50%', background: '#4ade80' }} />
@@ -446,15 +448,20 @@ export default function Login() {
                   fontFamily: 'var(--font-mono)',
                   fontSize: '0.72rem',
                   color: 'var(--ink-soft)',
+                  minWidth: 0,
+                  overflow: 'hidden',
+                  textOverflow: 'ellipsis',
+                  whiteSpace: 'nowrap',
+                  padding: '0 0.5rem',
                 }}
               >
                 Checkout Redesign v2.4 — Release Risk Map
               </span>
-              <span style={{ fontSize: '0.7rem', color: 'var(--ink-soft)', opacity: 0.5 }}>⌘K</span>
+              <span style={{ fontSize: '0.7rem', color: 'var(--ink-soft)', opacity: 0.5, flexShrink: 0 }}>⌘K</span>
             </div>
 
             {/* Window Content */}
-            <div style={{ padding: '1.25rem 1.5rem', display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+            <div className="login-preview-content" style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
               {/* Release Header Strip */}
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '0.5rem' }}>
                 <div>

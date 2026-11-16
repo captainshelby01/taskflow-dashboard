@@ -53,6 +53,7 @@ export default function Logo({ size = 'md', showBadge = true }: LogoProps) {
       {/* Brand Wordmark with Modern Geometry */}
       <div style={{ display: 'flex', alignItems: 'center', gap: '0.45rem' }}>
         <span
+          className="logo-brand-text"
           style={{
             fontFamily: 'var(--font-display)',
             fontSize,

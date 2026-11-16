@@ -435,9 +435,10 @@ export default function Board() {
         {/* Left: Brand + Project Switcher + Silent Sync Status */}
         <div className="global-nav-left">
           <Logo size="sm" showBadge={false} />
-          <span style={{ color: 'var(--border)', fontSize: '0.9rem', fontWeight: 300, userSelect: 'none' }}>/</span>
+          <span className="workspace-slash-separator" style={{ color: 'var(--border)', fontSize: '0.9rem', fontWeight: 300, userSelect: 'none' }}>/</span>
 
           <div
+            className="workspace-selector-btn"
             style={{
               display: 'inline-flex',
               alignItems: 'center',
@@ -776,6 +777,7 @@ export default function Board() {
 
           {/* About / Case Study Trigger */}
           <button
+            className="case-study-nav-btn"
             onClick={() => {
               setIsCaseStudyOpen(true);
               playHaptic('click');
@@ -934,7 +936,7 @@ export default function Board() {
         {/* Row 2: Honest Release Status & Blocker Ribbon */}
         <div className="status-ribbon-container">
           {/* Left Status Badges */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.85rem', flexWrap: 'wrap' }}>
+          <div className="status-badges-group" style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', flexWrap: 'wrap' }}>
             {/* Target Date */}
             <span
               style={{
@@ -950,7 +952,7 @@ export default function Board() {
               <span>Target: Friday, 20 Nov</span>
             </span>
 
-            <span style={{ color: 'var(--border)' }}>·</span>
+            <span className="mobile-hide" style={{ color: 'var(--border)' }}>·</span>
 
             {/* Blocker Pill */}
             {hasActiveBlocker ? (
@@ -966,17 +968,20 @@ export default function Board() {
                   color: '#ef4444',
                   background: 'rgba(239, 68, 68, 0.12)',
                   border: '1px solid rgba(239, 68, 68, 0.25)',
-                  padding: '0.2rem 0.55rem',
+                  padding: '0.25rem 0.65rem',
                   borderRadius: '999px',
                   display: 'inline-flex',
                   alignItems: 'center',
                   gap: '0.35rem',
                   cursor: 'pointer',
+                  maxWidth: '100%',
+                  textAlign: 'left',
+                  lineHeight: 1.35,
                 }}
                 title="Click to inspect blocker details"
               >
-                <i className="bi bi-exclamation-octagon-fill" style={{ fontSize: '0.7rem' }}></i>
-                <span>Release at Risk · Bank approval overdue (blocks testing)</span>
+                <i className="bi bi-exclamation-octagon-fill" style={{ fontSize: '0.7rem', flexShrink: 0 }}></i>
+                <span style={{ wordBreak: 'break-word' }}>Release at Risk · Bank approval overdue (blocks testing)</span>
               </button>
             ) : (
               <span
@@ -987,19 +992,22 @@ export default function Board() {
                   color: 'var(--moss)',
                   background: 'rgba(45, 90, 63, 0.12)',
                   border: '1px solid rgba(45, 90, 63, 0.25)',
-                  padding: '0.2rem 0.55rem',
+                  padding: '0.25rem 0.65rem',
                   borderRadius: '999px',
                   display: 'inline-flex',
                   alignItems: 'center',
                   gap: '0.35rem',
+                  maxWidth: '100%',
+                  textAlign: 'left',
+                  lineHeight: 1.35,
                 }}
               >
-                <i className="bi bi-check-circle-fill" style={{ fontSize: '0.7rem' }}></i>
-                <span>Release on Track · All Gateways Verified</span>
+                <i className="bi bi-check-circle-fill" style={{ fontSize: '0.7rem', flexShrink: 0 }}></i>
+                <span style={{ wordBreak: 'break-word' }}>Release on Track · All Gateways Verified</span>
               </span>
             )}
 
-            <span style={{ color: 'var(--border)' }}>·</span>
+            <span className="mobile-hide" style={{ color: 'var(--border)' }}>·</span>
 
             {/* Decision Pill */}
             <button
@@ -1017,10 +1025,14 @@ export default function Board() {
                 alignItems: 'center',
                 gap: '0.35rem',
                 padding: 0,
+                maxWidth: '100%',
+                textAlign: 'left',
+                lineHeight: 1.35,
+                flexWrap: 'wrap',
               }}
               title="Click to view Decision Trail in task drawer"
             >
-              <i className="bi bi-check2-circle" style={{ color: 'var(--moss)' }}></i>
+              <i className="bi bi-check2-circle" style={{ color: 'var(--moss)', flexShrink: 0 }}></i>
               <span>
                 Decision:{' '}
                 <strong style={{ textDecoration: 'underline', textUnderlineOffset: '2px' }}>
